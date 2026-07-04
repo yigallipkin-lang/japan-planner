@@ -1966,19 +1966,21 @@ async function sendChat() {
 
   chatHistory.push({role: 'user', content: msg});
   try {
+    // Build messages with system instruction in first user message
+    const messages = chatHistory.map((h, idx) => ({
+      role: h.role === 'assistant' ? 'model' : 'user',
+      parts: [{
+        text: idx === 0 ?
+          `You are a helpful Japan travel assistant. Context: ${tripContext}. Be concise, practical, and enthusiastic. Use emoji sparingly. Give specific actionable advice.\n\nUser: ${h.content}` :
+          h.content
+      }]
+    }));
+
     const resp = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
-        system_instruction: {
-          parts: {
-            text: `You are a helpful Japan travel assistant. Context: ${tripContext}. Be concise, practical, and enthusiastic. Use emoji sparingly. Give specific actionable advice.`
-          }
-        },
-        contents: [{
-          role: 'user',
-          parts: [{text: msg}]
-        }],
+        contents: messages,
         generationConfig: {
           maxOutputTokens: 1024,
           temperature: 0.7

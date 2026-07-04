@@ -1741,11 +1741,11 @@ function renderMap() {
       zoom: coords.zoom,
       center: {lat: coords.lat, lng: coords.lng},
       styles: [
-        {elementType: 'geometry', stylers: [{color: '#242f3e'}]},
-        {elementType: 'labels.text.stroke', stylers: [{color: '#242f3e'}]},
-        {elementType: 'labels.text.fill', stylers: [{color: '#746855'}]},
-        {featureType: 'water', elementType: 'geometry', stylers: [{color: '#17263c'}]},
-        {featureType: 'road', elementType: 'geometry', stylers: [{color: '#38414e'}]}
+        {elementType: 'geometry', stylers: [{color: '#f5f5f5'}]},
+        {elementType: 'labels.text.stroke', stylers: [{color: '#ffffff'}]},
+        {elementType: 'labels.text.fill', stylers: [{color: '#333333'}]},
+        {featureType: 'water', elementType: 'geometry', stylers: [{color: '#c9c9c9'}]},
+        {featureType: 'road', elementType: 'geometry', stylers: [{visibility: 'off'}]}
       ]
     });
   } else {

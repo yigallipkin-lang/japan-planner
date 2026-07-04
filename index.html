@@ -1966,25 +1966,17 @@ async function sendChat() {
 
   chatHistory.push({role: 'user', content: msg});
   try {
-    // Build messages with system instruction in first user message
-    const messages = chatHistory.map((h, idx) => ({
-      role: h.role === 'assistant' ? 'model' : 'user',
-      parts: [{
-        text: idx === 0 ?
-          `You are a helpful Japan travel assistant. Context: ${tripContext}. Be concise, practical, and enthusiastic. Use emoji sparingly. Give specific actionable advice.\n\nUser: ${h.content}` :
-          h.content
-      }]
-    }));
+    const tripContext = `Trip: Japan Sep 11-28 2026, 2 people. Cities: Tokyo (5+3 nights), Kyoto (2 nights), Osaka (5 nights). Budget: ₪25,600. Flights booked (DZIP76). Shinkansen booked (Tokyo→Kyoto Sep 17, Osaka→Tokyo Sep 24). Hotels not yet booked. Interests: food, culture, pop culture, nature.`;
 
-    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
-        contents: messages,
-        generationConfig: {
-          maxOutputTokens: 1024,
-          temperature: 0.7
-        }
+        contents: [{
+          parts: [{
+            text: `You are a helpful Japan trip assistant. Context: ${tripContext}\n\nAnswer this: ${msg}`
+          }]
+        }]
       })
     });
     const data = await resp.json();

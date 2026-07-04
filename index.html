@@ -6,6 +6,7 @@
 <title>Japan 2026 Trip Planner</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=M+PLUS+Rounded+1c:wght@300;400;500;700&display=swap" rel="stylesheet">
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBiJu3f2RTFmlgtnufI6FjWGu-KqEDdBjc&libraries=marker&language=en"></script>
+<script src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="i6mgzwo7uz367as"></script>
 <style>
 :root {
   --cyan: #16C8E6; --violet: #7B5CFF; --magenta: #FF45D2;
@@ -845,6 +846,9 @@ nav button:hover::before { opacity:1; }
       </div>
       <button class="btn btn-primary" style="margin-top:18px;" id="attachChooseBtn">
         📎 Choose Files
+      </button>
+      <button class="btn" style="margin-top:18px;" id="attachDropboxBtn" title="Upload files from Dropbox">
+        ☁ Dropbox
       </button>
       <input type="file" id="attachFileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.doc,.docx,.txt"
         style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">
@@ -2031,6 +2035,90 @@ function initAttachDrop() {
     if (this.files && this.files.length > 0) {
       processFiles(this.files);
     }
+  });
+
+  // Dropbox button
+  const dropboxBtn = document.getElementById('attachDropboxBtn');
+  if (dropboxBtn) {
+    dropboxBtn.addEventListener('click', openDropboxChooser);
+  }
+}
+
+function openDropboxChooser() {
+  if (typeof Dropbox === 'undefined' || !Dropbox.choose) {
+    alert('Dropbox integration is loading. Please try again in a moment.');
+    return;
+  }
+
+  Dropbox.choose({
+    success: function(files) {
+      if (!files || files.length === 0) return;
+      downloadDropboxFiles(files);
+    },
+    cancel: function() {},
+    linkType: 'direct',
+    multiselect: true,
+    extensions: ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.doc', '.docx', '.txt', '.xlsx', '.ppt', '.pptx'],
+    folderSelect: false
+  });
+}
+
+function downloadDropboxFiles(files) {
+  var cat = document.getElementById('attachCatSelect').value;
+  if (!state.attachments) state.attachments = {};
+  if (!state.attachments[cat]) state.attachments[cat] = [];
+
+  var maxFileSize = 2 * 1024 * 1024;
+  var processed = 0;
+  var total = files.length;
+
+  files.forEach(function(fileObj) {
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = 'blob';
+
+    xhr.onload = function() {
+      processed++;
+      if (xhr.status === 200) {
+        var blob = xhr.response;
+        if (blob.size > maxFileSize) {
+          alert(fileObj.name + ' is too large (' + formatSize(blob.size) + '). Max 2MB per file.');
+        } else {
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            state.attachments[cat].push({
+              name: fileObj.name,
+              type: blob.type || 'application/octet-stream',
+              size: blob.size,
+              data: e.target.result,
+              date: new Date().toISOString().slice(0,10),
+              id: Date.now() + '_' + Math.random().toString(36).slice(2,8)
+            });
+
+            if (processed === total) {
+              try {
+                localStorage.setItem('japan2026', JSON.stringify(state));
+                renderAttachments();
+                alert('Files uploaded successfully!');
+              } catch(err) {
+                alert('Storage full! Remove some files first.');
+                renderAttachments();
+              }
+            }
+          };
+          reader.readAsDataURL(blob);
+        }
+      } else {
+        if (processed === total) alert('Error downloading some files.');
+      }
+    };
+
+    xhr.onerror = function() {
+      processed++;
+      if (processed === total) alert('Error downloading files from Dropbox.');
+    };
+
+    xhr.open('GET', fileObj.link);
+    xhr.send();
   });
 }
 

@@ -1,0 +1,2218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Japan 2026 Trip Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=M+PLUS+Rounded+1c:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBiJu3f2RTFmlgtnufI6FjWGu-KqEDdBjc&libraries=marker"></script>
+<style>
+:root {
+  --cyan: #16C8E6; --violet: #7B5CFF; --magenta: #FF45D2;
+  --yellow: #FFC22E; --lime: #1FE0A0; --vermilion: #FF4D6D;
+  --bg: #0d0f1a; --bg2: #151829; --card: rgba(21,24,41,0.85);
+  --glass: rgba(123,92,255,0.08); --border: rgba(123,92,255,0.25);
+  --text: #e8e6f0; --text2: #a09cb5; --text3: #6b6780;
+  --glow: 0 0 20px rgba(123,92,255,0.3);
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'M PLUS Rounded 1c', sans-serif;
+  --tokyo: #16C8E6; --kyoto: #FF45D2; --osaka: #FFC22E; --transit: #7B5CFF;
+}
+[data-theme="light"] {
+  --bg: #f0eef5; --bg2: #ffffff; --card: rgba(255,255,255,0.9);
+  --glass: rgba(123,92,255,0.05); --border: rgba(123,92,255,0.2);
+  --text: #1a1830; --text2: #555068; --text3: #8a85a0;
+  --glow: 0 0 15px rgba(123,92,255,0.15);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--font-body); background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+body::before { content:''; position:fixed; inset:0; background:
+  repeating-linear-gradient(0deg,transparent,transparent 49px,rgba(123,92,255,0.03) 50px),
+  repeating-linear-gradient(90deg,transparent,transparent 49px,rgba(123,92,255,0.03) 50px);
+  pointer-events:none; z-index:0; }
+
+/* Header */
+.header { background:linear-gradient(135deg,#2a1f5e,#4a2080,#2a1f5e); padding:10px 20px;
+  display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100;
+  border-bottom:1px solid var(--border); backdrop-filter:blur(20px); }
+.header-left { display:flex; align-items:center; gap:12px; }
+.logo { font-family:var(--font-display); font-size:1.5rem; font-weight:700; color:#fff;
+  background:linear-gradient(90deg,var(--cyan),var(--violet),var(--magenta));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.logo-sub { font-size:0.75rem; color:var(--text2); }
+.header-right { display:flex; align-items:center; gap:8px; }
+.hdr-btn { background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15); color:#fff;
+  width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:1.1rem;
+  display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+.hdr-btn:hover { background:rgba(255,255,255,0.2); transform:scale(1.1); }
+.status-pill { font-size:0.7rem; padding:3px 10px; border-radius:12px; font-weight:600;
+  font-family:var(--font-display); }
+.status-pill.online { background:rgba(31,224,160,0.2); color:var(--lime); border:1px solid rgba(31,224,160,0.3); }
+.status-pill.offline { background:rgba(255,77,109,0.2); color:var(--vermilion); border:1px solid rgba(255,77,109,0.3); }
+
+/* Navigation */
+nav { background:linear-gradient(90deg,#3a2080,#5a30a0); padding:0; overflow-x:auto;
+  display:flex; white-space:nowrap; border-bottom:2px solid var(--violet);
+  scrollbar-width:thin; scrollbar-color:var(--violet) transparent;
+  position:sticky; top:0; z-index:100; }
+nav button { font-family:var(--font-display); font-size:0.75rem; font-weight:600;
+  text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.7);
+  background:none; border:none; padding:10px 16px; cursor:pointer;
+  transition:all 0.2s; flex-shrink:0; position:relative; }
+nav button:hover { color:#fff; background:rgba(255,255,255,0.08); }
+nav button.active { color:#fff; }
+nav button.active::after { content:''; position:absolute; bottom:0; left:10%; right:10%;
+  height:3px; background:var(--cyan); border-radius:3px 3px 0 0; box-shadow:0 0 10px var(--cyan); }
+
+/* Main Content */
+main { max-width:1200px; margin:0 auto; padding:20px; position:relative; z-index:1; }
+.section { display:none; animation:fadeIn 0.3s ease; }
+.section.active { display:block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+
+/* Cards */
+.card { background:var(--card); border:1px solid var(--border); border-radius:16px;
+  padding:20px; margin-bottom:16px; backdrop-filter:blur(12px);
+  box-shadow:var(--glow); transition:all 0.3s; }
+.card:hover { border-color:rgba(123,92,255,0.4); transform:translateY(-2px);
+  box-shadow:0 0 30px rgba(123,92,255,0.2); }
+.card h3 { font-family:var(--font-display); font-size:1.2rem; font-weight:600; margin-bottom:12px;
+  background:linear-gradient(90deg,var(--cyan),var(--violet));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+
+/* Form Elements */
+input,textarea,select { font-family:var(--font-body); background:rgba(123,92,255,0.08);
+  border:1px solid var(--border); color:var(--text); padding:8px 12px; border-radius:8px;
+  width:100%; transition:border-color 0.2s; font-size:0.9rem; }
+input:focus,textarea:focus,select:focus { outline:none; border-color:var(--cyan);
+  box-shadow:0 0 10px rgba(22,200,230,0.2); }
+textarea { resize:vertical; min-height:60px; }
+label { font-family:var(--font-display); font-size:0.85rem; font-weight:500; color:var(--text2);
+  text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:4px; }
+
+/* Buttons */
+.btn { font-family:var(--font-display); font-weight:600; padding:8px 20px; border-radius:8px;
+  border:none; cursor:pointer; text-transform:uppercase; letter-spacing:1px;
+  font-size:0.8rem; transition:all 0.2s; }
+.btn-primary { background:linear-gradient(135deg,var(--violet),var(--magenta)); color:#fff; }
+.btn-primary:hover { transform:translateY(-1px); box-shadow:0 4px 15px rgba(123,92,255,0.4); }
+
+/* Chips & Badges */
+.chip { display:inline-block; padding:4px 12px; border-radius:20px; font-size:0.75rem;
+  font-family:var(--font-display); font-weight:600; margin:2px; cursor:pointer;
+  transition:all 0.2s; text-transform:uppercase; letter-spacing:0.5px; }
+.chip-tokyo { background:rgba(22,200,230,0.15); color:var(--tokyo); border:1px solid rgba(22,200,230,0.3); }
+.chip-kyoto { background:rgba(255,69,210,0.15); color:var(--kyoto); border:1px solid rgba(255,69,210,0.3); }
+.chip-osaka { background:rgba(255,194,46,0.15); color:var(--osaka); border:1px solid rgba(255,194,46,0.3); }
+.chip-transit { background:rgba(123,92,255,0.15); color:var(--transit); border:1px solid rgba(123,92,255,0.3); }
+.badge { padding:3px 10px; border-radius:12px; font-size:0.7rem; font-family:var(--font-display);
+  font-weight:700; text-transform:uppercase; }
+.badge-paid { background:rgba(31,224,160,0.2); color:var(--lime); }
+.badge-booked { background:rgba(22,200,230,0.2); color:var(--cyan); }
+.badge-tobook { background:rgba(255,194,46,0.2); color:var(--yellow); }
+
+/* Grid layouts */
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+.grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+@media(max-width:900px) { .grid-2,.grid-3,.grid-4 { grid-template-columns:1fr; } }
+
+/* Section titles */
+.section-title { font-family:var(--font-display); font-size:1.8rem; font-weight:700;
+  margin-bottom:20px; display:flex; align-items:center; gap:12px; }
+.section-title span { font-size:2rem; }
+
+/* Checklist */
+.checklist-item { display:flex; align-items:center; gap:10px; padding:8px 0;
+  border-bottom:1px solid rgba(123,92,255,0.08); }
+.checklist-item input[type=checkbox] { width:18px; height:18px; accent-color:var(--violet);
+  cursor:pointer; flex-shrink:0; }
+.checklist-item.checked span { text-decoration:line-through; color:var(--text3); }
+
+/* Star rating */
+.stars { display:inline-flex; gap:2px; cursor:pointer; }
+.stars span { font-size:1.2rem; color:var(--text3); transition:color 0.2s; }
+.stars span.filled { color:var(--yellow); }
+
+/* Status cycling */
+.status-cycle { cursor:pointer; user-select:none; }
+.status-cycle:hover { transform:scale(1.05); }
+
+/* Budget bars */
+.budget-bar-wrap { background:rgba(123,92,255,0.1); border-radius:8px; height:20px;
+  overflow:hidden; margin:6px 0; }
+.budget-bar { height:100%; border-radius:8px; transition:width 0.5s ease; min-width:2px; }
+.budget-bar.under { background:linear-gradient(90deg,var(--lime),var(--cyan)); }
+.budget-bar.over { background:linear-gradient(90deg,var(--vermilion),var(--magenta)); }
+
+/* Tables */
+table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+thead { background:var(--bg2); position:sticky; top:0; z-index:99; }
+th { font-family:var(--font-display); text-transform:uppercase; font-size:0.75rem;
+  letter-spacing:1px; color:var(--text2); padding:10px 8px; text-align:left;
+  border-bottom:2px solid var(--border); background:var(--bg2); }
+td { padding:8px; border-bottom:1px solid rgba(123,92,255,0.08); vertical-align:top; }
+td input, td textarea { font-size:0.8rem; padding:4px 8px; }
+
+/* Timeline day cards */
+.day-card { border-left:4px solid var(--violet); }
+.day-card.city-tokyo { border-left-color:var(--tokyo); }
+.day-card.city-kyoto { border-left-color:var(--kyoto); }
+.day-card.city-osaka { border-left-color:var(--osaka); }
+.day-card.city-transit { border-left-color:var(--transit); }
+.day-header { display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
+.day-header h3 { font-size:1rem; }
+.day-body { display:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); }
+.day-body.open { display:block; }
+.day-meta { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.expand-icon { transition:transform 0.3s; font-size:1.2rem; color:var(--text2); }
+.expand-icon.open { transform:rotate(180deg); }
+
+/* Chat sidebar */
+.chat-overlay { position:fixed; top:0; right:-420px; width:400px; height:100vh;
+  background:var(--bg2); border-left:1px solid var(--border); z-index:200;
+  transition:right 0.3s ease; display:flex; flex-direction:column; }
+.chat-overlay.open { right:0; }
+.chat-header { padding:16px; border-bottom:1px solid var(--border); display:flex;
+  justify-content:space-between; align-items:center; }
+.chat-messages { flex:1; overflow-y:auto; padding:16px; }
+.chat-msg { margin-bottom:12px; padding:10px 14px; border-radius:12px; font-size:0.9rem;
+  line-height:1.5; max-width:85%; }
+.chat-msg.user { background:rgba(123,92,255,0.2); margin-left:auto; border-bottom-right-radius:4px; }
+.chat-msg.ai { background:var(--glass); border:1px solid var(--border); border-bottom-left-radius:4px; }
+.chat-input-wrap { padding:12px; border-top:1px solid var(--border); display:flex; gap:8px; }
+.chat-input-wrap input { flex:1; }
+.chat-input-wrap button { flex-shrink:0; }
+
+/* Map */
+.map-container { position:relative; }
+.map-legend { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+.map-legend .chip { cursor:pointer; }
+.map-legend .chip.dim { opacity:0.3; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--violet); border-radius:3px; }
+
+/* Hero SVG */
+.hero-svg { width:100%; max-height:200px; margin-bottom:20px; }
+
+/* Responsive */
+@media(max-width:768px) {
+  nav button { padding:8px 10px; font-size:0.65rem; }
+  .header { padding:8px 12px; }
+  .logo { font-size:1.2rem; }
+  main { padding:12px; }
+  .grid-2 { grid-template-columns:1fr; }
+  .chat-overlay { width:100%; right:-100%; }
+}
+
+/* Quick Jump */
+.quick-jump { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0; }
+.quick-jump button { font-family:var(--font-display); font-size:0.75rem; padding:6px 14px;
+  background:var(--glass); border:1px solid var(--border); color:var(--text);
+  border-radius:8px; cursor:pointer; transition:all 0.2s; text-transform:uppercase;
+  font-weight:600; letter-spacing:0.5px; }
+.quick-jump button:hover { background:rgba(123,92,255,0.15); border-color:var(--violet);
+  transform:translateY(-1px); }
+
+/* Currency converter */
+.converter { display:flex; align-items:center; gap:8px; }
+.converter input { width:120px; text-align:right; font-size:1rem; font-weight:600; }
+.converter span { font-family:var(--font-display); color:var(--text2); font-size:0.9rem; }
+
+/* Activity chips */
+.activity-chips { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+.activity-chip { font-size:0.7rem; padding:2px 8px; border-radius:10px;
+  background:rgba(123,92,255,0.1); border:1px solid rgba(123,92,255,0.15);
+  color:var(--text2); cursor:pointer; transition:all 0.2s; }
+.activity-chip:hover { background:rgba(123,92,255,0.2); color:var(--text); }
+
+/* Manga/Anime elements */
+@keyframes sparkle { 0%,100%{opacity:0;transform:scale(0.5)} 50%{opacity:1;transform:scale(1.2)} }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+@keyframes speedLine { 0%{opacity:0;transform:translateX(-20px)} 50%{opacity:0.3} 100%{opacity:0;transform:translateX(20px)} }
+@keyframes glow-pulse { 0%,100%{box-shadow:var(--glow)} 50%{box-shadow:0 0 35px rgba(123,92,255,0.5)} }
+
+.manga-panel { position:relative; overflow:hidden; }
+.manga-panel::before { content:''; position:absolute; top:-2px; right:-2px; bottom:-2px; left:-2px;
+  background:linear-gradient(45deg,var(--cyan),var(--violet),var(--magenta),var(--yellow));
+  border-radius:18px; z-index:-1; opacity:0; transition:opacity 0.3s; }
+.manga-panel:hover::before { opacity:0.6; }
+
+.section-title { position:relative; }
+.section-title::after { content:''; display:inline-block; width:40px; height:3px;
+  background:linear-gradient(90deg,var(--magenta),transparent); margin-left:8px; vertical-align:middle; }
+
+.card { position:relative; }
+.card::after { content:''; position:absolute; top:8px; right:8px; width:8px; height:8px;
+  background:var(--magenta); border-radius:50%; opacity:0; transition:opacity 0.3s;
+  box-shadow:0 0 6px var(--magenta); }
+.card:hover::after { opacity:0.7; animation:sparkle 1.5s infinite; }
+
+.sparkle-dot { position:fixed; width:4px; height:4px; border-radius:50%; pointer-events:none;
+  z-index:0; animation:sparkle 3s infinite; }
+
+body::after { content:'✦'; position:fixed; top:50%; right:20px; font-size:1.5rem;
+  color:var(--magenta); opacity:0.15; animation:float 4s ease-in-out infinite; z-index:0;
+  pointer-events:none; }
+
+.speed-lines { position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none;
+  overflow:hidden; opacity:0; transition:opacity 0.3s; }
+.card:hover .speed-lines { opacity:1; }
+
+.hero-svg { filter:drop-shadow(0 0 20px rgba(123,92,255,0.3)); }
+
+nav button { position:relative; }
+nav button::before { content:''; position:absolute; inset:0; background:
+  linear-gradient(135deg,transparent 40%,rgba(255,69,210,0.05) 50%,transparent 60%);
+  opacity:0; transition:opacity 0.2s; }
+nav button:hover::before { opacity:1; }
+
+.logo { position:relative; text-shadow:0 0 20px rgba(22,200,230,0.5); }
+
+.countdown-wrap { position:relative; }
+.countdown-wrap::before, .countdown-wrap::after { content:'✧'; position:absolute; top:50%;
+  font-size:1.5rem; color:var(--yellow); opacity:0.4; animation:float 3s ease-in-out infinite; }
+.countdown-wrap::before { left:15px; animation-delay:0s; }
+.countdown-wrap::after { right:15px; animation-delay:1.5s; }
+
+.stat-card { position:relative; overflow:hidden; }
+.stat-card::before { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%;
+  background:conic-gradient(from 0deg,transparent,rgba(123,92,255,0.05),transparent,rgba(255,69,210,0.05),transparent);
+  animation:spin 8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+.day-card { position:relative; overflow:hidden; }
+.day-card::before { content:''; position:absolute; top:0; right:0; width:60px; height:60px;
+  background:linear-gradient(135deg,transparent 50%,rgba(123,92,255,0.05) 50%);
+  pointer-events:none; }
+
+.hdr-btn { position:relative; overflow:hidden; }
+.hdr-btn::after { content:''; position:absolute; inset:-2px; border-radius:50%;
+  background:conic-gradient(var(--cyan),var(--violet),var(--magenta),var(--cyan));
+  opacity:0; transition:opacity 0.3s; z-index:-1; }
+.hdr-btn:hover::after { opacity:0.5; }
+
+.chip { position:relative; overflow:hidden; }
+.chip::before { content:''; position:absolute; top:-50%; left:-50%; width:0; height:200%;
+  background:rgba(255,255,255,0.1); transform:rotate(45deg); transition:width 0.3s; }
+.chip:hover::before { width:200%; }
+
+/* Manga speech bubble for tooltips */
+.manga-tip { position:relative; }
+.manga-tip::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 8px); left:50%;
+  transform:translateX(-50%) scale(0); background:var(--bg2); border:2px solid var(--violet);
+  border-radius:12px 12px 12px 0; padding:6px 12px; font-size:0.75rem; color:var(--text);
+  white-space:nowrap; transition:transform 0.2s; pointer-events:none; z-index:10;
+  font-family:var(--font-display); box-shadow:0 0 15px rgba(123,92,255,0.3); }
+.manga-tip:hover::after { transform:translateX(-50%) scale(1); }
+
+/* Anime-style gradient text for city names */
+.city-name-tokyo { background:linear-gradient(90deg,#16C8E6,#0ea0c0);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:700; }
+.city-name-kyoto { background:linear-gradient(90deg,#FF45D2,#d93ab0);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:700; }
+.city-name-osaka { background:linear-gradient(90deg,#FFC22E,#e0a020);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:700; }
+
+/* Attachments */
+.attach-drop { border:2px dashed var(--border); border-radius:12px; padding:40px 20px;
+  text-align:center; cursor:pointer; transition:all 0.3s; position:relative; }
+.attach-drop:hover, .attach-drop.dragover { border-color:var(--cyan);
+  background:rgba(22,200,230,0.05); }
+.attach-file { display:flex; align-items:center; justify-content:space-between; padding:12px 16px;
+  border-radius:10px; background:var(--glass); border:1px solid var(--border); margin-bottom:8px;
+  transition:all 0.2s; }
+.attach-file:hover { border-color:rgba(123,92,255,0.4); }
+.attach-file-info { display:flex; align-items:center; gap:12px; min-width:0; flex:1; }
+.attach-file-icon { font-size:1.5rem; flex-shrink:0; }
+.attach-file-name { font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.attach-file-meta { font-size:0.75rem; color:var(--text3); }
+.attach-file-actions { display:flex; gap:6px; flex-shrink:0; }
+.attach-file-actions button { background:rgba(123,92,255,0.15); border:1px solid var(--border);
+  color:var(--text); width:32px; height:32px; border-radius:8px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; font-size:0.9rem; transition:all 0.2s; }
+.attach-file-actions button:hover { background:rgba(123,92,255,0.3); transform:scale(1.05); }
+.attach-file-actions button.del:hover { background:rgba(255,77,109,0.3); border-color:var(--vermilion); }
+.attach-cat { margin-bottom:20px; }
+.attach-cat-header { font-family:var(--font-display); font-size:1rem; font-weight:600;
+  color:var(--text2); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;
+  padding-bottom:6px; border-bottom:1px solid var(--border); display:flex;
+  align-items:center; gap:8px; }
+.attach-count { font-size:0.75rem; padding:2px 8px; border-radius:10px;
+  background:rgba(123,92,255,0.15); color:var(--violet); }
+.storage-bar { margin-top:12px; }
+.storage-bar-label { font-size:0.75rem; color:var(--text3); margin-bottom:4px;
+  display:flex; justify-content:space-between; }
+
+/* Print */
+@media print { nav,.header,.chat-overlay,.hdr-btn { display:none!important; }
+  .section { display:block!important; page-break-inside:avoid; }
+  body { background:#fff; color:#000; }
+  .card { border:1px solid #ccc; box-shadow:none; }
+  .card::after,.sparkle-dot,body::after,.countdown-wrap::before,.countdown-wrap::after,
+  .stat-card::before,.day-card::before { display:none!important; } }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div>
+      <div class="logo">JAPAN 2026</div>
+      <div class="logo-sub">Sep 11–28 · Tokyo · Kyoto · Osaka</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="status-pill online" id="statusPill">ONLINE</span>
+    <button class="hdr-btn manga-tip" data-tip="AI Assistant" onclick="toggleChat()" title="AI Assistant">💬</button>
+    <button class="hdr-btn manga-tip" data-tip="Theme" onclick="toggleTheme()" title="Toggle theme">◐</button>
+    <button class="hdr-btn manga-tip" data-tip="Download" onclick="downloadHTML()" title="Download HTML">⬇</button>
+    <button class="hdr-btn manga-tip" data-tip="Print" onclick="exportPDF()" title="Print/PDF">🖨</button>
+  </div>
+</div>
+
+<!-- Navigation -->
+<nav id="mainNav">
+  <button class="active" data-section="dashboard">Dashboard</button>
+  <button data-section="timeline">Timeline</button>
+  <button data-section="master">Master</button>
+  <button data-section="maps">Maps</button>
+  <button data-section="reservations">Reservations</button>
+  <button data-section="transport">Transport</button>
+  <button data-section="hotels">Hotels</button>
+  <button data-section="attractions">Attractions</button>
+  <button data-section="restaurants">Restaurants</button>
+  <button data-section="shopping">Shopping</button>
+  <button data-section="budget">Budget</button>
+  <button data-section="packing">Packing</button>
+  <button data-section="attachments">Attachments</button>
+  <button data-section="documents">Documents</button>
+  <button data-section="tips">Tips</button>
+  <button data-section="notes">Notes</button>
+</nav>
+
+<main>
+
+<!-- ======================== DASHBOARD ======================== -->
+<div class="section active" id="sec-dashboard">
+  <svg class="hero-svg" viewBox="0 0 1000 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- Sky gradient -->
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#1a0a3e"/>
+        <stop offset="100%" stop-color="#2a1060"/>
+      </linearGradient>
+      <linearGradient id="fuji" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#e8e0f0"/>
+        <stop offset="40%" stop-color="#7B5CFF"/>
+        <stop offset="100%" stop-color="#3a2080"/>
+      </linearGradient>
+    </defs>
+    <rect width="1000" height="200" fill="url(#sky)"/>
+    <!-- Stars -->
+    <circle cx="50" cy="30" r="1.5" fill="#fff" opacity="0.6"/>
+    <circle cx="150" cy="50" r="1" fill="#fff" opacity="0.4"/>
+    <circle cx="300" cy="20" r="1.5" fill="#fff" opacity="0.7"/>
+    <circle cx="500" cy="40" r="1" fill="#fff" opacity="0.5"/>
+    <circle cx="700" cy="25" r="1.5" fill="#fff" opacity="0.6"/>
+    <circle cx="850" cy="45" r="1" fill="#fff" opacity="0.4"/>
+    <circle cx="950" cy="15" r="1.5" fill="#fff" opacity="0.5"/>
+    <!-- Moon -->
+    <circle cx="880" cy="40" r="20" fill="#FFC22E" opacity="0.9"/>
+    <circle cx="890" cy="35" r="18" fill="url(#sky)"/>
+    <!-- Mt Fuji -->
+    <polygon points="350,200 500,60 650,200" fill="url(#fuji)"/>
+    <polygon points="460,95 500,60 540,95" fill="#fff" opacity="0.8"/>
+    <!-- Torii gate -->
+    <g transform="translate(150,120)" stroke="#FF45D2" stroke-width="3" fill="none">
+      <line x1="5" y1="0" x2="5" y2="80"/>
+      <line x1="55" y1="0" x2="55" y2="80"/>
+      <line x1="-5" y1="5" x2="65" y2="5"/>
+      <line x1="0" y1="20" x2="60" y2="20"/>
+      <path d="M-10,0 Q30,-10 70,0" stroke-width="4"/>
+    </g>
+    <!-- Pagoda -->
+    <g transform="translate(720,80)">
+      <rect x="20" y="100" width="40" height="20" fill="#4a2080"/>
+      <polygon points="10,100 40,75 70,100" fill="#7B5CFF"/>
+      <polygon points="15,80 40,58 65,80" fill="#6B4CFF"/>
+      <polygon points="20,62 40,42 60,62" fill="#5B3CFF"/>
+      <line x1="40" y1="42" x2="40" y2="30" stroke="#FFC22E" stroke-width="2"/>
+    </g>
+    <!-- Shinkansen -->
+    <g transform="translate(50,170)">
+      <rect x="0" y="0" width="120" height="18" rx="9" fill="#16C8E6"/>
+      <rect x="100" y="2" width="30" height="14" rx="7" fill="#0ea0c0"/>
+      <circle cx="25" cy="22" r="5" fill="#333"/>
+      <circle cx="85" cy="22" r="5" fill="#333"/>
+      <rect x="10" y="4" width="12" height="8" rx="2" fill="rgba(255,255,255,0.3)"/>
+      <rect x="28" y="4" width="12" height="8" rx="2" fill="rgba(255,255,255,0.3)"/>
+      <rect x="46" y="4" width="12" height="8" rx="2" fill="rgba(255,255,255,0.3)"/>
+      <rect x="64" y="4" width="12" height="8" rx="2" fill="rgba(255,255,255,0.3)"/>
+    </g>
+    <!-- Tokyo Tower -->
+    <g transform="translate(830,90)">
+      <polygon points="20,110 30,0 40,110" fill="#FF4D6D" stroke="#FF4D6D" stroke-width="1"/>
+      <line x1="22" y1="80" x2="38" y2="80" stroke="#fff" stroke-width="1" opacity="0.5"/>
+      <line x1="24" y1="60" x2="36" y2="60" stroke="#fff" stroke-width="1" opacity="0.5"/>
+      <line x1="26" y1="40" x2="34" y2="40" stroke="#fff" stroke-width="1" opacity="0.5"/>
+      <circle cx="30" cy="0" r="3" fill="#FF4D6D"/>
+    </g>
+    <!-- Cherry blossoms -->
+    <g fill="#FF45D2" opacity="0.6">
+      <circle cx="250" cy="100" r="3"/><circle cx="255" cy="96" r="3"/><circle cx="260" cy="100" r="3"/><circle cx="255" cy="104" r="3"/>
+      <circle cx="280" cy="130" r="2.5"/><circle cx="284" cy="127" r="2.5"/><circle cx="288" cy="130" r="2.5"/>
+      <circle cx="680" cy="140" r="3"/><circle cx="685" cy="136" r="3"/><circle cx="690" cy="140" r="3"/>
+    </g>
+    <!-- Anime girl silhouette (traveler with backpack) -->
+    <g transform="translate(580,130)" fill="#FF45D2" opacity="0.7">
+      <circle cx="12" cy="8" r="8"/> <!-- head -->
+      <path d="M5,16 Q12,14 19,16 L17,45 Q12,47 7,45 Z"/> <!-- body -->
+      <path d="M17,20 L24,30 L22,31 L16,23"/> <!-- arm -->
+      <path d="M7,20 L0,28 L2,29 L8,23"/> <!-- arm -->
+      <path d="M7,45 L5,70 L9,70 L10,46"/> <!-- leg -->
+      <path d="M17,45 L19,70 L15,70 L14,46"/> <!-- leg -->
+      <rect x="16" y="18" width="10" height="14" rx="3" fill="#7B5CFF" opacity="0.8"/> <!-- backpack -->
+      <!-- hair streaks -->
+      <path d="M4,6 Q0,12 3,16" stroke="#FF45D2" stroke-width="1.5" fill="none"/>
+      <path d="M20,6 Q24,12 21,16" stroke="#FF45D2" stroke-width="1.5" fill="none"/>
+    </g>
+    <!-- Anime boy silhouette (traveler with camera) -->
+    <g transform="translate(610,135)" fill="#16C8E6" opacity="0.7">
+      <circle cx="12" cy="8" r="7.5"/> <!-- head -->
+      <path d="M5,15 Q12,13 19,15 L17,44 Q12,46 7,44 Z"/> <!-- body -->
+      <path d="M17,20 L22,25 L20,27 L16,23"/> <!-- arm holding camera -->
+      <rect x="20" y="22" width="6" height="5" rx="1" fill="#FFC22E" opacity="0.9"/> <!-- camera -->
+      <path d="M7,20 L2,28 L4,29 L8,23"/> <!-- arm -->
+      <path d="M7,44 L5,68 L9,68 L10,45"/> <!-- leg -->
+      <path d="M17,44 L19,68 L15,68 L14,45"/> <!-- leg -->
+      <!-- spiky hair -->
+      <path d="M5,4 L2,0 L7,5" fill="#16C8E6"/>
+      <path d="M10,2 L12,-2 L14,2" fill="#16C8E6"/>
+      <path d="M19,4 L22,0 L17,5" fill="#16C8E6"/>
+    </g>
+    <!-- Manga speed lines behind shinkansen -->
+    <g stroke="#16C8E6" stroke-width="0.5" opacity="0.3">
+      <line x1="0" y1="175" x2="45" y2="175"/>
+      <line x1="5" y1="180" x2="40" y2="180"/>
+      <line x1="0" y1="185" x2="35" y2="185"/>
+      <line x1="10" y1="170" x2="48" y2="170"/>
+    </g>
+    <!-- Sparkle effects -->
+    <g fill="#FFC22E" opacity="0.6">
+      <path d="M400,30 L402,36 L408,38 L402,40 L400,46 L398,40 L392,38 L398,36 Z" transform="scale(0.6)"/>
+      <path d="M750,80 L752,86 L758,88 L752,90 L750,96 L748,90 L742,88 L748,86 Z" transform="scale(0.5)"/>
+      <path d="M200,60 L202,66 L208,68 L202,70 L200,76 L198,70 L192,68 L198,66 Z" transform="scale(0.4)"/>
+    </g>
+    <!-- Manga text effect -->
+    <text x="500" y="195" text-anchor="middle" fill="rgba(123,92,255,0.15)" font-family="Rajdhani,sans-serif"
+      font-size="12" font-weight="700" letter-spacing="8">★ 日本の冒険 ★ JAPAN ADVENTURE ★</text>
+    <!-- Ground -->
+    <rect x="0" y="197" width="1000" height="3" fill="#1FE0A0" opacity="0.3"/>
+  </svg>
+
+  <div class="section-title"><span>🏠</span> Dashboard</div>
+
+  <!-- Countdown -->
+  <div class="card countdown-wrap manga-panel" style="text-align:center;animation:glow-pulse 4s ease-in-out infinite;">
+    <h3>Countdown to Japan</h3>
+    <div id="countdown" style="font-family:var(--font-display);font-size:2.5rem;font-weight:700;
+      background:linear-gradient(90deg,var(--cyan),var(--violet),var(--magenta));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;"></div>
+    <div style="color:var(--text2);margin-top:4px;">Until departure · Fri 11 Sep 2026 19:45 TLV</div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid-4" style="margin-bottom:16px;">
+    <div class="card stat-card manga-panel" style="text-align:center;">
+      <div style="font-size:2rem;font-family:var(--font-display);font-weight:700;color:var(--cyan);">18</div>
+      <div style="font-size:0.8rem;color:var(--text2);">DAYS</div>
+    </div>
+    <div class="card stat-card manga-panel" style="text-align:center;">
+      <div style="font-size:2rem;font-family:var(--font-display);font-weight:700;color:var(--magenta);">4</div>
+      <div style="font-size:0.8rem;color:var(--text2);">CITY STAYS</div>
+    </div>
+    <div class="card stat-card manga-panel" style="text-align:center;">
+      <div style="font-size:2rem;font-family:var(--font-display);font-weight:700;color:var(--yellow);" id="dashBudgetDisplay"></div>
+      <div style="font-size:0.8rem;color:var(--text2);">BUDGET</div>
+    </div>
+    <div class="card stat-card manga-panel" style="text-align:center;">
+      <div style="font-size:2rem;font-family:var(--font-display);font-weight:700;color:var(--lime);">2</div>
+      <div style="font-size:0.8rem;color:var(--text2);">TRAVELERS</div>
+    </div>
+  </div>
+
+  <!-- Quick Jump -->
+  <div class="card">
+    <h3>Quick Jump</h3>
+    <div class="quick-jump" id="quickJump"></div>
+  </div>
+
+  <!-- Booking checklist + Currency converter -->
+  <div class="grid-2">
+    <div class="card">
+      <h3>Booking Checklist</h3>
+      <div id="bookingChecklist"></div>
+    </div>
+    <div class="card">
+      <h3>Currency Converter</h3>
+      <div style="margin-bottom:12px;">
+        <label>Exchange Rate (¥1 = ₪)</label>
+        <input type="number" step="0.0001" id="exchangeRate" value="0.0185"
+          oninput="saveData();convertCurrency('yen');" style="width:150px;">
+      </div>
+      <div class="converter">
+        <input type="number" id="convYen" placeholder="0" oninput="convertCurrency('yen')">
+        <span>¥ =</span>
+        <input type="number" id="convShekel" placeholder="0" oninput="convertCurrency('shekel')">
+        <span>₪</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== TIMELINE ======================== -->
+<div class="section" id="sec-timeline">
+  <div class="section-title"><span>📅</span> Timeline</div>
+  <div id="timelineContainer"></div>
+</div>
+
+<!-- ======================== MASTER TABLE ======================== -->
+<div class="section" id="sec-master">
+  <div class="section-title"><span>📊</span> Master Table</div>
+  <div class="card" style="background:rgba(255,69,210,0.03);border:1px solid rgba(255,69,210,0.2);margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <h3 style="margin:0;font-size:0.95rem;color:var(--text2);text-transform:uppercase;">Cities to Visit</h3>
+      <button class="btn btn-sm" onclick="addNewCity()" style="padding:4px 12px;font-size:0.8rem;">+ Add City</button>
+    </div>
+    <div id="citiesListContainer" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+  </div>
+  <div class="card" style="overflow:auto; max-height:calc(100vh - 280px);">
+    <table id="masterTable">
+      <thead>
+        <tr><th>#</th><th>Date</th><th>Day</th><th>Day In</th><th>Night In</th><th>Transit</th><th>Hotel</th><th>To-Do</th><th>Notes</th></tr>
+      </thead>
+      <tbody id="masterBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ======================== MAPS ======================== -->
+<div class="section" id="sec-maps">
+  <div class="section-title"><span>🗺</span> City Maps</div>
+  <div style="display:flex;gap:8px;margin-bottom:16px;">
+    <button class="btn btn-primary" onclick="showMap('tokyo')">Tokyo</button>
+    <button class="btn btn-primary" onclick="showMap('kyoto')">Kyoto</button>
+    <button class="btn btn-primary" onclick="showMap('osaka')">Osaka</button>
+  </div>
+  <div class="map-legend" id="mapLegend">
+    <span class="chip" data-cat="hotel" onclick="toggleMapCat(this)">🛏 Hotels</span>
+    <span class="chip" data-cat="sight" onclick="toggleMapCat(this)">⛩ Sights</span>
+    <span class="chip" data-cat="food" onclick="toggleMapCat(this)">🍜 Food</span>
+    <span class="chip" data-cat="event" onclick="toggleMapCat(this)">🎫 Events</span>
+    <span class="chip" data-cat="station" onclick="toggleMapCat(this)">🚉 Stations</span>
+  </div>
+  <div class="card" id="mapCard" style="padding:0;overflow:hidden;">
+    <div id="mapContainer" style="width:100%;height:600px;position:relative;">
+      <div id="googleMap" style="width:100%;height:100%;"></div>
+      <div id="mapApiNote" style="padding:20px;text-align:center;background:var(--bg2);border-top:1px solid var(--border);">
+        <p style="color:var(--text2);font-size:0.85rem;">
+          <strong>Google Maps API Key Required</strong><br>
+          <a href="https://console.cloud.google.com/google/maps-apis/credentials" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:none;">Get a free API key →</a><br>
+          Then open the HTML file, find the Google Maps script tag, and replace the dummy key with yours.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== RESERVATIONS ======================== -->
+<div class="section" id="sec-reservations">
+  <div class="section-title"><span>📋</span> Reservations</div>
+  <div id="reservationsContainer"></div>
+</div>
+
+<!-- ======================== TRANSPORT ======================== -->
+<div class="section" id="sec-transport">
+  <div class="section-title"><span>🚄</span> Transport Hub</div>
+
+  <div class="card">
+    <h3>✈ Outbound Flight · 11 Sep</h3>
+    <div class="grid-2">
+      <div>
+        <div style="color:var(--text2);font-size:0.8rem;">Route</div>
+        <div>TLV → DXB → NRT</div>
+        <div style="font-size:0.85rem;color:var(--text2);">EK2471/FZ1126 + EK318</div>
+      </div>
+      <div>
+        <div style="color:var(--text2);font-size:0.8rem;">Times</div>
+        <div>11 Sep 19:45 → 12 Sep 17:35</div>
+        <div style="font-size:0.85rem;color:var(--text2);">Seats 73A/73B · 30kg each</div>
+      </div>
+    </div>
+    <div style="margin-top:8px;"><span class="badge badge-paid">PAID</span> Booking: DZIP76</div>
+  </div>
+
+  <div class="card">
+    <h3>✈ Return Flight · 27 Sep</h3>
+    <div class="grid-2">
+      <div>
+        <div style="color:var(--text2);font-size:0.8rem;">Route</div>
+        <div>NRT → DXB → TLV</div>
+        <div style="font-size:0.85rem;color:var(--text2);">EK319 + EK2120/FZ1073</div>
+      </div>
+      <div>
+        <div style="color:var(--text2);font-size:0.8rem;">Times</div>
+        <div>27 Sep 22:30 → 28 Sep 08:45</div>
+        <div style="font-size:0.85rem;color:var(--text2);">Seats 74J/74K</div>
+      </div>
+    </div>
+    <div style="margin-top:8px;"><span class="badge badge-paid">PAID</span> Booking: DZIP76</div>
+  </div>
+
+  <div class="card">
+    <h3>🚅 JR Pass Verdict</h3>
+    <p style="color:var(--text2);line-height:1.6;">
+      <strong style="color:var(--lime);">Skip JR Pass — Save money!</strong><br>
+      A 7-day JR Pass costs ¥50,000/person (¥100,000 for 2). Your two Shinkansen legs total ¥56,180.
+      The pass only saves money if you take 3+ long-distance rides in 7 days.
+      For local trains, use IC cards (Suica/PASMO in Tokyo, ICOCA in Kansai).
+    </p>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>🚅 Tokyo → Kyoto · 17 Sep</h3>
+      <div>Nozomi 31 · 12:12 → 14:23</div>
+      <div style="color:var(--text2);font-size:0.85rem;">¥27,540 for 2 · Res# 2002</div>
+      <div style="margin-top:6px;"><span class="badge badge-booked">BOOKED</span></div>
+    </div>
+    <div class="card">
+      <h3>🚅 Osaka → Tokyo · 24 Sep</h3>
+      <div>Nozomi 252 · 12:15 → 14:45</div>
+      <div style="color:var(--text2);font-size:0.85rem;">¥28,640 for 2 · Res# 2003</div>
+      <div style="margin-top:6px;"><span class="badge badge-booked">BOOKED</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🚃 Kyoto ↔ Osaka Local</h3>
+    <p style="color:var(--text2);line-height:1.6;">
+      JR Special Rapid: ~30 min, ~¥580/person. No reservation needed — just tap IC card.
+      Hankyu Railway alternative: ~45 min, ~¥410/person (cheaper, different stations).
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>💳 IC Cards</h3>
+    <div class="grid-2">
+      <div>
+        <strong style="color:var(--tokyo);">Tokyo: Suica/PASMO</strong>
+        <p style="color:var(--text2);font-size:0.85rem;">Works on JR, Metro, buses, konbini. Add to Apple Wallet for tap-and-go.</p>
+      </div>
+      <div>
+        <strong style="color:var(--osaka);">Kansai: ICOCA</strong>
+        <p style="color:var(--text2);font-size:0.85rem;">Works across Kyoto/Osaka/Nara. Buy at any JR station.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== HOTELS ======================== -->
+<div class="section" id="sec-hotels">
+  <div class="section-title"><span>🏨</span> Hotels</div>
+  <div class="grid-2" id="hotelsContainer"></div>
+</div>
+
+<!-- ======================== ATTRACTIONS ======================== -->
+<div class="section" id="sec-attractions">
+  <div class="section-title"><span>🎯</span> Attractions</div>
+  <div style="display:flex;gap:8px;margin-bottom:16px;">
+    <button class="btn btn-primary" onclick="showAttractions('tokyo')">Tokyo</button>
+    <button class="btn btn-primary" onclick="showAttractions('kyoto')">Kyoto</button>
+    <button class="btn btn-primary" onclick="showAttractions('osaka')">Osaka</button>
+    <button class="btn btn-primary" onclick="showAttractions('all')">All</button>
+  </div>
+  <div id="attractionsContainer"></div>
+</div>
+
+<!-- ======================== RESTAURANTS ======================== -->
+<div class="section" id="sec-restaurants">
+  <div class="section-title"><span>🍜</span> Restaurants</div>
+  <div style="display:flex;gap:8px;margin-bottom:16px;">
+    <button class="btn btn-primary" onclick="showRestaurants('tokyo')">Tokyo</button>
+    <button class="btn btn-primary" onclick="showRestaurants('kyoto')">Kyoto</button>
+    <button class="btn btn-primary" onclick="showRestaurants('osaka')">Osaka</button>
+  </div>
+  <div id="restaurantsContainer"></div>
+</div>
+
+<!-- ======================== SHOPPING ======================== -->
+<div class="section" id="sec-shopping">
+  <div class="section-title"><span>🛍</span> Shopping</div>
+  <div style="display:flex;gap:8px;margin-bottom:16px;">
+    <button class="btn btn-primary" onclick="showShopping('tokyo')">Tokyo</button>
+    <button class="btn btn-primary" onclick="showShopping('kyoto')">Kyoto</button>
+    <button class="btn btn-primary" onclick="showShopping('osaka')">Osaka</button>
+  </div>
+  <div class="card" style="margin-bottom:16px;">
+    <h3>🧾 Tax-Free Shopping</h3>
+    <p style="color:var(--text2);line-height:1.6;">Spend ¥5,000+ at participating stores → show passport → get 10% consumption tax waived.
+    Look for "Tax Free" signs. Consumables (food, cosmetics) are sealed and must leave Japan unopened.</p>
+  </div>
+  <div id="shoppingContainer"></div>
+</div>
+
+<!-- ======================== BUDGET ======================== -->
+<div class="section" id="sec-budget">
+  <div class="section-title"><span>💰</span> Budget Tracker</div>
+  <div class="card" style="margin-bottom:16px;">
+    <h3>All figures in ₪ for 2 people</h3>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;">
+      <div>
+        <label>Total Budget (₪)</label>
+        <input type="number" id="totalBudgetInput" style="width:150px;"
+          oninput="state.totalBudget=Number(this.value)||25600;saveData();renderBudget();updateDashBudget();">
+      </div>
+      <div>
+        <label>Exchange Rates to NIS (₪)</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span style="font-size:0.8rem;color:var(--text2);white-space:nowrap;">¥1 =</span>
+            <input type="number" step="0.0001" id="budgetRate" style="width:80px;"
+              oninput="document.getElementById('exchangeRate').value=this.value;saveData();renderBudget();" placeholder="0.0185">
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span style="font-size:0.8rem;color:var(--text2);white-space:nowrap;">$1 =</span>
+            <input type="number" step="0.01" id="usdRate" style="width:80px;"
+              oninput="saveData();renderBudget();" placeholder="3.6">
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span style="font-size:0.8rem;color:var(--text2);white-space:nowrap;">₪1 =</span>
+            <input type="number" step="0.01" id="nisRate" style="width:80px;background:rgba(0,0,0,0.2);" value="1" disabled>
+          </div>
+        </div>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Category</th><th>Planned ₪</th><th>Spent ₪</th><th>Remaining</th><th>Progress</th></tr>
+      </thead>
+      <tbody id="budgetBody"></tbody>
+      <tfoot id="budgetFoot"></tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- ======================== PACKING ======================== -->
+<div class="section" id="sec-packing">
+  <div class="section-title"><span>🎒</span> Packing List</div>
+  <div class="card" style="margin-bottom:16px;">
+    <p style="color:var(--text2);line-height:1.6;">
+      <strong>September Weather:</strong> 28–32°C, high humidity, afternoon thunderstorms possible.
+      Typhoon season — check forecasts weekly. Plan to do laundry mid-trip (coin laundry or hotel service).
+    </p>
+  </div>
+  <div class="grid-2" id="packingContainer"></div>
+</div>
+
+<!-- ======================== ATTACHMENTS ======================== -->
+<div class="section" id="sec-attachments">
+  <div class="section-title"><span>📎</span> Attachments</div>
+
+  <div class="card">
+    <h3>Upload Reservations, Tickets & Documents</h3>
+    <p style="color:var(--text2);font-size:0.85rem;margin-bottom:12px;">
+      Store flight confirmations, hotel bookings, train tickets, attraction passes, and travel docs.
+      Files are saved in your browser (max ~30MB total). PDFs, images, and documents accepted.
+    </p>
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+      <div>
+        <label>Category</label>
+        <select id="attachCatSelect" style="width:auto;">
+          <option value="flights">✈ Flights</option>
+          <option value="hotels">🏨 Hotels</option>
+          <option value="trains">🚅 Trains</option>
+          <option value="attractions">🎫 Attractions</option>
+          <option value="restaurants">🍜 Restaurants</option>
+          <option value="insurance">🛡 Insurance</option>
+          <option value="other">📁 Other</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" style="margin-top:18px;" id="attachChooseBtn">
+        📎 Choose Files
+      </button>
+      <input type="file" id="attachFileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.doc,.docx,.txt"
+        style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">
+    </div>
+    <div class="attach-drop" id="attachDrop">
+      <div style="font-size:2rem;margin-bottom:8px;">📄</div>
+      <div style="font-family:var(--font-display);font-size:1rem;font-weight:600;color:var(--text2);">
+        Drop files here to upload
+      </div>
+      <div style="font-size:0.8rem;color:var(--text3);margin-top:4px;">PDF, JPG, PNG, DOCX · Max 2MB per file</div>
+    </div>
+    <div class="storage-bar" style="margin-top:12px;">
+      <div class="storage-bar-label">
+        <span>Storage used</span>
+        <span id="storageUsed">0 KB / 30 MB</span>
+      </div>
+      <div class="budget-bar-wrap">
+        <div class="budget-bar under" id="storageBar" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="attachmentsContainer"></div>
+</div>
+
+<!-- ======================== DOCUMENTS ======================== -->
+<div class="section" id="sec-documents">
+  <div class="section-title"><span>📄</span> Travel Documents</div>
+  <div class="card">
+    <h3>Document Checklist</h3>
+    <div id="documentsChecklist"></div>
+  </div>
+</div>
+
+<!-- ======================== TIPS ======================== -->
+<div class="section" id="sec-tips">
+  <div class="section-title"><span>💡</span> Japan Tips</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>🗣 Useful Phrases</h3>
+      <table>
+        <tr><td style="color:var(--cyan);">ありがとう</td><td>Arigatō</td><td style="color:var(--text2);">Thank you</td></tr>
+        <tr><td style="color:var(--cyan);">すみません</td><td>Sumimasen</td><td style="color:var(--text2);">Excuse me / Sorry</td></tr>
+        <tr><td style="color:var(--cyan);">お願いします</td><td>Onegaishimasu</td><td style="color:var(--text2);">Please</td></tr>
+        <tr><td style="color:var(--cyan);">いくらですか</td><td>Ikura desu ka</td><td style="color:var(--text2);">How much?</td></tr>
+        <tr><td style="color:var(--cyan);">英語OK?</td><td>Eigo OK?</td><td style="color:var(--text2);">English OK?</td></tr>
+        <tr><td style="color:var(--cyan);">美味しい</td><td>Oishii</td><td style="color:var(--text2);">Delicious!</td></tr>
+        <tr><td style="color:var(--cyan);">トイレ</td><td>Toire</td><td style="color:var(--text2);">Toilet</td></tr>
+        <tr><td style="color:var(--cyan);">駅はどこ?</td><td>Eki wa doko?</td><td style="color:var(--text2);">Where's the station?</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>🎌 Etiquette</h3>
+      <ul style="color:var(--text2);line-height:1.8;list-style:none;">
+        <li>🚫 No tipping — it can be considered rude</li>
+        <li>👟 Remove shoes when entering homes, temples, some restaurants</li>
+        <li>🤫 Keep quiet on trains — silence phones, no calls</li>
+        <li>🚶 Walk on the left (Tokyo) or right (Osaka)</li>
+        <li>🗑 Carry your trash — few public bins</li>
+        <li>🙏 Bow slightly when greeting or thanking</li>
+        <li>💴 Use both hands when giving/receiving money or cards</li>
+        <li>🍜 Slurping noodles is polite — shows enjoyment</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>♨ Onsen & Temple Rules</h3>
+      <ul style="color:var(--text2);line-height:1.8;list-style:none;">
+        <li>🚿 Wash thoroughly before entering onsen bath</li>
+        <li>🩱 No swimwear in traditional onsen (naked bathing)</li>
+        <li>🖼 Tattoos may be restricted — check ahead or use private onsen</li>
+        <li>⛩ Bow before entering shrine gate (torii)</li>
+        <li>📸 Check photo rules at temples — some restrict interiors</li>
+        <li>🧹 Walk on the sides of shrine paths (center is for gods)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>💴 Money Tips</h3>
+      <ul style="color:var(--text2);line-height:1.8;list-style:none;">
+        <li>🏧 7-Eleven ATMs accept foreign cards (low fees)</li>
+        <li>💳 Cards accepted at major stores; cash still needed for small shops</li>
+        <li>🛍 Tax-free: ¥5,000+ at participating stores, show passport</li>
+        <li>📱 Suica in Apple Wallet works great for transit + konbini</li>
+        <li>💰 Carry ¥10,000–20,000 cash for markets, shrines, small eateries</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>🌀 September Weather & Typhoons</h3>
+      <ul style="color:var(--text2);line-height:1.8;list-style:none;">
+        <li>🌡 28–32°C, very humid — stay hydrated</li>
+        <li>🌧 Afternoon thunderstorms common — carry compact umbrella</li>
+        <li>🌀 Peak typhoon season — monitor weather apps</li>
+        <li>🚄 Shinkansen may stop during typhoons — have backup plans</li>
+        <li>👕 Light, breathable clothing; quick-dry fabrics ideal</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>📱 Essential Apps</h3>
+      <ul style="color:var(--text2);line-height:1.8;list-style:none;">
+        <li>🗺 Google Maps — best for navigation</li>
+        <li>🚃 Navitime Japan Travel — train schedules & routes</li>
+        <li>🗣 Google Translate — camera mode for menus/signs</li>
+        <li>🎢 USJ App — wait times & show schedules</li>
+        <li>🌤 Weather News Japan — typhoon tracking</li>
+        <li>🍽 Tabelog — Japanese restaurant reviews</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🚨 Emergency Numbers</h3>
+    <div class="grid-3">
+      <div style="text-align:center;">
+        <div style="font-size:2rem;font-family:var(--font-display);font-weight:700;color:var(--vermilion);">110</div>
+        <div style="color:var(--text2);">Police</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:2rem;font-family:var(--font-display);font-weight:700;color:var(--vermilion);">119</div>
+        <div style="color:var(--text2);">Ambulance / Fire</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:2rem;font-family:var(--font-display);font-weight:700;color:var(--cyan);">03-3501-0110</div>
+        <div style="color:var(--text2);">Tourist Helpline</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== NOTES ======================== -->
+<div class="section" id="sec-notes">
+  <div class="section-title"><span>📝</span> Notes & Journal</div>
+  <div class="card">
+    <textarea id="notesArea" style="min-height:400px;font-size:1rem;line-height:1.8;"
+      placeholder="Free space for notes, memories, restaurant tips, shopping ideas..."
+      oninput="saveData()"></textarea>
+  </div>
+</div>
+
+</main>
+
+<!-- Chat Sidebar -->
+<div class="chat-overlay" id="chatOverlay">
+  <div class="chat-header">
+    <h3 style="font-family:var(--font-display);background:linear-gradient(90deg,var(--cyan),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">AI Travel Assistant</h3>
+    <button class="hdr-btn" onclick="toggleChat()" style="width:30px;height:30px;font-size:0.9rem;">✕</button>
+  </div>
+  <div id="chatApiKey" style="padding:16px;">
+    <label>Claude API Key</label>
+    <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+    <button class="btn btn-primary" style="margin-top:8px;width:100%;" onclick="setApiKey()">Connect</button>
+    <p style="font-size:0.75rem;color:var(--text3);margin-top:8px;">Key stored in memory only — never saved to disk.</p>
+  </div>
+  <div class="chat-messages" id="chatMessages" style="display:none;"></div>
+  <div class="chat-input-wrap" id="chatInputWrap" style="display:none;">
+    <input type="text" id="chatInput" placeholder="Ask about your trip..." onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="btn btn-primary" onclick="sendChat()">Send</button>
+  </div>
+</div>
+
+<script>
+// ==================== DATA ====================
+const TRIP_START = new Date('2026-09-11T19:45:00+03:00');
+const DAYS_DATA = [
+  {date:'2026-09-11',day:'Fri',dayNum:1,dayIn:'Tel Aviv',nightIn:'✈ In-flight',transit:'EK2471→EK318 19:45',city:'transit',hotel:'',todo:'',notes:'Depart TLV 19:45'},
+  {date:'2026-09-12',day:'Sat',dayNum:2,dayIn:'✈→Tokyo',nightIn:'Tokyo',transit:'Arrive NRT 17:35',city:'tokyo',hotel:'',todo:'',notes:'Land 17:35, get to hotel, konbini dinner'},
+  {date:'2026-09-13',day:'Sun',dayNum:3,dayIn:'Tokyo',nightIn:'Tokyo',transit:'',city:'tokyo',hotel:'',todo:'',notes:''},
+  {date:'2026-09-14',day:'Mon',dayNum:4,dayIn:'Tokyo',nightIn:'Tokyo',transit:'',city:'tokyo',hotel:'',todo:'',notes:''},
+  {date:'2026-09-15',day:'Tue',dayNum:5,dayIn:'Tokyo',nightIn:'Tokyo',transit:'',city:'tokyo',hotel:'',todo:'',notes:''},
+  {date:'2026-09-16',day:'Wed',dayNum:6,dayIn:'Tokyo',nightIn:'Tokyo',transit:'',city:'tokyo',hotel:'',todo:'',notes:'Demo test event 17:00–22:30'},
+  {date:'2026-09-17',day:'Thu',dayNum:7,dayIn:'Tokyo→Kyoto',nightIn:'Kyoto',transit:'Nozomi 31 12:12→14:23',city:'kyoto',hotel:'',todo:'',notes:'Check out Tokyo hotel AM'},
+  {date:'2026-09-18',day:'Fri',dayNum:8,dayIn:'Kyoto',nightIn:'Kyoto',transit:'',city:'kyoto',hotel:'',todo:'',notes:''},
+  {date:'2026-09-19',day:'Sat',dayNum:9,dayIn:'Kyoto→Osaka',nightIn:'Osaka',transit:'JR/Hankyu ~30min',city:'osaka',hotel:'',todo:'',notes:'Check out Kyoto, train to Osaka'},
+  {date:'2026-09-20',day:'Sun',dayNum:10,dayIn:'Osaka',nightIn:'Osaka',transit:'',city:'osaka',hotel:'',todo:'',notes:''},
+  {date:'2026-09-21',day:'Mon',dayNum:11,dayIn:'Osaka',nightIn:'Osaka',transit:'',city:'osaka',hotel:'',todo:'',notes:''},
+  {date:'2026-09-22',day:'Tue',dayNum:12,dayIn:'Osaka',nightIn:'Osaka',transit:'',city:'osaka',hotel:'',todo:'',notes:''},
+  {date:'2026-09-23',day:'Wed',dayNum:13,dayIn:'Osaka',nightIn:'Osaka',transit:'',city:'osaka',hotel:'',todo:'',notes:'Possible Nara day trip'},
+  {date:'2026-09-24',day:'Thu',dayNum:14,dayIn:'Osaka→Tokyo',nightIn:'Tokyo',transit:'Nozomi 252 12:15→14:45',city:'tokyo',hotel:'',todo:'',notes:'Check out Osaka hotel AM'},
+  {date:'2026-09-25',day:'Fri',dayNum:15,dayIn:'Tokyo',nightIn:'Tokyo',transit:'',city:'tokyo',hotel:'',todo:'',notes:''},
+  {date:'2026-09-26',day:'Sat',dayNum:16,dayIn:'Tokyo',nightIn:'Tokyo',transit:'',city:'tokyo',hotel:'',todo:'',notes:''},
+  {date:'2026-09-27',day:'Sun',dayNum:17,dayIn:'Tokyo',nightIn:'✈ In-flight',transit:'EK319 22:30 NRT',city:'tokyo',hotel:'',todo:'',notes:'Last day! Depart 22:30'},
+  {date:'2026-09-28',day:'Mon',dayNum:18,dayIn:'✈→Tel Aviv',nightIn:'Home 🏠',transit:'Arrive TLV 08:45',city:'transit',hotel:'',todo:'',notes:'Land 08:45 TLV'}
+];
+
+const BOOKINGS = [
+  {id:'fl-out',cat:'Flights',name:'TLV→NRT Outbound',date:'11 Sep',details:'EK2471+EK318, 19:45→17:35+1, Seats 73A/73B, 30kg, Booking DZIP76',amount:0,status:'paid',conf:'DZIP76'},
+  {id:'fl-ret',cat:'Flights',name:'NRT→TLV Return',date:'27 Sep',details:'EK319+EK2120, 22:30→08:45+1, Seats 74J/74K, Booking DZIP76',amount:0,status:'paid',conf:'DZIP76'},
+  {id:'tr-tky',cat:'Trains',name:'Tokyo→Kyoto Shinkansen',date:'17 Sep',details:'Nozomi 31, 12:12→14:23',amount:27540,status:'booked',conf:'Res# 2002'},
+  {id:'tr-osk',cat:'Trains',name:'Osaka→Tokyo Shinkansen',date:'24 Sep',details:'Nozomi 252, 12:15→14:45',amount:28640,status:'booked',conf:'Res# 2003'},
+  {id:'htl-tk1',cat:'Hotels',name:'Tokyo Hotel (1st stay)',date:'12–17 Sep',details:'5 nights',amount:0,status:'tobook',conf:''},
+  {id:'htl-kyo',cat:'Hotels',name:'Kyoto Hotel',date:'17–19 Sep',details:'2 nights',amount:0,status:'tobook',conf:''},
+  {id:'htl-osk',cat:'Hotels',name:'Osaka Hotel',date:'19–24 Sep',details:'5 nights',amount:0,status:'tobook',conf:''},
+  {id:'htl-tk2',cat:'Hotels',name:'Tokyo Hotel (2nd stay)',date:'24–27 Sep',details:'3 nights',amount:0,status:'tobook',conf:''},
+  {id:'att-usj',cat:'Attractions',name:'Universal Studios Japan',date:'TBD',details:'Osaka, book Express Pass',amount:0,status:'tobook',conf:''},
+  {id:'att-tlb',cat:'Attractions',name:'teamLab Borderless',date:'TBD',details:'Azabudai Hills, Tokyo',amount:0,status:'tobook',conf:''},
+];
+
+const HOTELS_DATA = [
+  {id:'tk1',label:'Tokyo 1st Stay',dates:'12–17 Sep (5 nights)',city:'tokyo',neighborhoods:'Shinjuku (central hub), Shibuya (trendy), Asakusa (traditional), Akihabara (otaku)'},
+  {id:'kyo',label:'Kyoto',dates:'17–19 Sep (2 nights)',city:'kyoto',neighborhoods:'Gion (traditional), Kawaramachi (downtown), Kyoto Station area (convenient)'},
+  {id:'osk',label:'Osaka',dates:'19–24 Sep (5 nights)',city:'osaka',neighborhoods:'Namba/Dotonbori (food heaven), Umeda (modern), Shin-Osaka (near station)'},
+  {id:'tk2',label:'Tokyo 2nd Stay',dates:'24–27 Sep (3 nights)',city:'tokyo',neighborhoods:'Same or different area — revisit favorites or try new neighborhood'},
+];
+
+const ATTRACTIONS = [
+  {name:'Senso-ji Temple',city:'tokyo',type:'culture',cost:'Free',book:false,duration:'1–2h',notes:'Asakusa. Oldest temple in Tokyo. Nakamise-dori shopping street.'},
+  {name:'Meiji Jingu Shrine',city:'tokyo',type:'culture',cost:'Free',book:false,duration:'1–2h',notes:'Harajuku. Serene forest walk in Shibuya.'},
+  {name:'Shibuya Sky',city:'tokyo',type:'culture',cost:'¥2,000',book:true,duration:'1h',notes:'Rooftop observatory. Best at sunset. Book online.'},
+  {name:'teamLab Borderless',city:'tokyo',type:'culture',cost:'¥3,800',book:true,duration:'2–3h',notes:'Azabudai Hills. Immersive digital art. Book well ahead.'},
+  {name:'Akihabara Electric Town',city:'tokyo',type:'pop',cost:'Free (browsing)',book:false,duration:'2–4h',notes:'Anime, manga, figures, retro games, maid cafes.'},
+  {name:'Tsukiji Outer Market',city:'tokyo',type:'food',cost:'¥2,000–4,000',book:false,duration:'2h',notes:'Street food paradise. Go early. Tamago, tuna, wagyu skewers.'},
+  {name:'Shinjuku Golden Gai',city:'tokyo',type:'food',cost:'Varies',book:false,duration:'2–3h',notes:'Tiny bars district. Cover charge ¥500–1,000. Evening only.'},
+  {name:'Harajuku & Takeshita Street',city:'tokyo',type:'pop',cost:'Free',book:false,duration:'2h',notes:'Youth fashion, crepes, kawaii culture.'},
+  {name:'Toyosu Fish Market',city:'tokyo',type:'food',cost:'Free entry',book:true,duration:'2h',notes:'Tuna auction viewing (lottery). Sushi breakfast.'},
+  {name:'Tokyo Skytree',city:'tokyo',type:'culture',cost:'¥2,100–3,100',book:false,duration:'1h',notes:'Tallest tower in Japan. Clear day recommended.'},
+  {name:'Imperial Palace Gardens',city:'tokyo',type:'nature',cost:'Free',book:false,duration:'1–2h',notes:'East Gardens open daily except Mon/Fri.'},
+  {name:'Odaiba',city:'tokyo',type:'pop',cost:'Varies',book:false,duration:'3–4h',notes:'Gundam statue, DiverCity, teamLab, Rainbow Bridge views.'},
+  {name:'Fushimi Inari Shrine',city:'kyoto',type:'culture',cost:'Free',book:false,duration:'2–3h',notes:'10,000 orange torii gates. Go early to avoid crowds.'},
+  {name:'Arashiyama Bamboo Grove',city:'kyoto',type:'nature',cost:'Free',book:false,duration:'2–3h',notes:'Iconic bamboo forest. Combine with Monkey Park & Tenryu-ji.'},
+  {name:'Kinkaku-ji (Golden Pavilion)',city:'kyoto',type:'culture',cost:'¥500',book:false,duration:'1h',notes:'Gold-leafed temple over mirror pond.'},
+  {name:'Gion District',city:'kyoto',type:'culture',cost:'Free',book:false,duration:'2h',notes:'Geisha district. Evening stroll along Hanami-koji.'},
+  {name:'Nishiki Market',city:'kyoto',type:'food',cost:'¥1,000–2,000',book:false,duration:'1–2h',notes:'"Kyoto\'s Kitchen." 400m covered arcade. Street food sampling.'},
+  {name:'Kiyomizu-dera',city:'kyoto',type:'culture',cost:'¥400',book:false,duration:'1–2h',notes:'Hillside temple with panoramic views. Beautiful at sunset.'},
+  {name:'Dotonbori',city:'osaka',type:'food',cost:'Free (food varies)',book:false,duration:'3h',notes:'Neon-lit food street. Takoyaki, okonomiyaki, gyoza, crab.'},
+  {name:'Osaka Castle',city:'osaka',type:'culture',cost:'¥600',book:false,duration:'2h',notes:'Iconic castle with museum inside. Park is great for strolling.'},
+  {name:'Universal Studios Japan',city:'osaka',type:'pop',cost:'¥8,600+',book:true,duration:'Full day',notes:'Super Nintendo World! Buy Express Pass. Book months ahead.'},
+  {name:'Kuromon Market',city:'osaka',type:'food',cost:'¥1,000–3,000',book:false,duration:'1–2h',notes:'"Osaka\'s Kitchen." Fresh seafood, wagyu, fruit.'},
+  {name:'Shinsekai & Tsutenkaku',city:'osaka',type:'culture',cost:'¥800 tower',book:false,duration:'2h',notes:'Retro district. Kushikatsu (deep-fried skewers) everywhere.'},
+  {name:'Nara Day Trip',city:'osaka',type:'nature',cost:'¥600 train',book:false,duration:'Full day',notes:'From Osaka ~45min. Friendly deer, Todai-ji Great Buddha.'},
+  {name:'Sumiyoshi Taisha',city:'osaka',type:'culture',cost:'Free',book:false,duration:'1h',notes:'One of Japan\'s oldest shrines. Unique arched bridge.'},
+];
+
+const RESTAURANTS = [
+  {name:'Ichiran Ramen',city:'tokyo',cuisine:'Ramen',price:'¥1,000–1,500',reservation:false,hours:'24h (many locations)',rating:'4.2',signature:'Tonkotsu ramen in private booths',veg:'No',notes:'Solo dining booths. Customize spice, richness, noodle firmness.'},
+  {name:'Afuri Ramen',city:'tokyo',cuisine:'Ramen',price:'¥1,200–1,800',reservation:false,hours:'11:00–23:00',rating:'4.3',signature:'Yuzu shio (citrus salt) ramen',veg:'Vegan option available',notes:'Lighter, citrus-forward ramen. Great veg option.'},
+  {name:'Gonpachi (Kill Bill restaurant)',city:'tokyo',cuisine:'Izakaya',price:'¥3,000–5,000',reservation:true,hours:'11:30–23:00',rating:'4.0',signature:'Soba, yakitori in dramatic setting',veg:'Some options',notes:'Nishi-Azabu. The restaurant that inspired Kill Bill scene.'},
+  {name:'Tsukiji Sushisay',city:'tokyo',cuisine:'Sushi',price:'¥3,000–8,000',reservation:true,hours:'07:00–22:00',rating:'4.4',signature:'Omakase at the counter',veg:'No',notes:'Near Tsukiji Market. Quality sushi, fair price.'},
+  {name:'Memory Lane (Omoide Yokocho)',city:'tokyo',cuisine:'Yakitori/Street',price:'¥1,000–2,000',reservation:false,hours:'15:00–midnight',rating:'4.1',signature:'Yakitori skewers, tiny alley bars',veg:'Limited',notes:'Shinjuku west exit. Atmospheric narrow alleys.'},
+  {name:'Narisawa',city:'tokyo',cuisine:'Fine Dining',price:'¥20,000+',reservation:true,hours:'12:00–13:00, 18:00–19:30',rating:'4.7',signature:'Innovative Japanese-French, "Satoyama" cuisine',veg:'Can accommodate',notes:'2 Michelin stars. Book well in advance.'},
+  {name:'Nishiki Market stalls',city:'kyoto',cuisine:'Street Food',price:'¥500–2,000',reservation:false,hours:'09:00–17:00',rating:'4.3',signature:'Dashi tamago, mochi, pickles, tofu donuts',veg:'Many options',notes:'Graze the whole street. Most shops close by 5pm.'},
+  {name:'Gion Kappa',city:'kyoto',cuisine:'Kaiseki',price:'¥5,000–10,000',reservation:true,hours:'11:30–14:00, 17:00–21:00',rating:'4.5',signature:'Traditional multi-course Kyoto cuisine',veg:'Can accommodate',notes:'Gion area. Intimate setting.'},
+  {name:'Ippudo Ramen Kyoto',city:'kyoto',cuisine:'Ramen',price:'¥900–1,500',reservation:false,hours:'11:00–22:00',rating:'4.2',signature:'Hakata-style tonkotsu',veg:'No',notes:'Reliable chain with Kyoto branch.'},
+  {name:'Mizuno Okonomiyaki',city:'osaka',cuisine:'Okonomiyaki',price:'¥1,200–2,000',reservation:false,hours:'11:00–22:00',rating:'4.4',signature:'Yamaimo-yaki (yam okonomiyaki)',veg:'Vegetable version',notes:'Dotonbori. Often a queue — worth the wait.'},
+  {name:'Takoyaki Wanaka',city:'osaka',cuisine:'Takoyaki',price:'¥500–800',reservation:false,hours:'10:00–21:00',rating:'4.3',signature:'Crispy outside, creamy inside takoyaki',veg:'No',notes:'Multiple locations. Best in Dotonbori.'},
+  {name:'Daruma Kushikatsu',city:'osaka',cuisine:'Kushikatsu',price:'¥1,000–2,500',reservation:false,hours:'11:00–22:30',rating:'4.1',signature:'Deep-fried skewers. No double-dipping!',veg:'Vegetable skewers',notes:'Shinsekai institution. Follow the sauce rules.'},
+  {name:'Kuromon Market vendors',city:'osaka',cuisine:'Seafood/Street',price:'¥500–3,000',reservation:false,hours:'08:00–17:00',rating:'4.2',signature:'Giant scallops, wagyu skewers, uni, fruit',veg:'Some',notes:'Go hungry. Cash preferred at stalls.'},
+];
+
+const SHOPPING_DATA = [
+  {name:'Akihabara (Multiple stores)',city:'tokyo',category:'Anime/Electronics',hours:'10:00–21:00',nearby:'Akihabara Station',budget:'¥5,000–50,000',notes:'Mandarake (vintage manga/figures), Yodobashi Camera (electronics megastore), Super Potato (retro games)'},
+  {name:'Nakano Broadway',city:'tokyo',category:'Anime/Vintage',hours:'12:00–20:00',nearby:'Nakano Station',budget:'¥3,000–20,000',notes:'Less touristy than Akihabara. Mandarake flagship. Vintage toys, rare figures.'},
+  {name:'Kappabashi Street',city:'tokyo',category:'Kitchenware/Knives',hours:'10:00–17:00',nearby:'Tawaramachi Station',budget:'¥5,000–30,000',notes:'Kitchen town. Japanese knives, ceramics, fake food samples. Closed Sundays.'},
+  {name:'Tokyu Hands / Loft',city:'tokyo',category:'Stationery/Lifestyle',hours:'10:00–21:00',nearby:'Shibuya/Shinjuku',budget:'¥2,000–10,000',notes:'Japanese stationery, gadgets, crafts. Multiple floors of everything.'},
+  {name:'Shimokitazawa',city:'tokyo',category:'Vintage/Fashion',hours:'12:00–20:00',nearby:'Shimokitazawa Station',budget:'¥2,000–15,000',notes:'Vintage clothing, thrift shops, indie cafes. Bohemian neighborhood.'},
+  {name:'Don Quijote (Donki)',city:'tokyo',category:'Everything',hours:'24h',nearby:'Everywhere',budget:'¥1,000–10,000',notes:'Tax-free. Snacks, cosmetics, souvenirs, electronics, costumes. Chaotic but fun.'},
+  {name:'Teramachi & Shinkyogoku',city:'kyoto',category:'Souvenirs/Traditional',hours:'10:00–20:00',nearby:'Kawaramachi Station',budget:'¥2,000–15,000',notes:'Covered shopping arcades. Traditional crafts, fans, incense, green tea goods.'},
+  {name:'Nishiki Market shops',city:'kyoto',category:'Food souvenirs',hours:'09:00–17:00',nearby:'Shijo Station',budget:'¥1,000–5,000',notes:'Matcha sweets, pickles, rice crackers, knife shops.'},
+  {name:'Shinsaibashi-suji',city:'osaka',category:'Fashion/General',hours:'10:00–21:00',nearby:'Shinsaibashi Station',budget:'¥3,000–20,000',notes:'600m covered shopping street. Mix of international brands and local shops.'},
+  {name:'Den Den Town',city:'osaka',category:'Anime/Electronics',hours:'10:00–20:00',nearby:'Nippombashi Station',budget:'¥3,000–30,000',notes:'Osaka\'s Akihabara. Anime, figures, retro games, electronics.'},
+  {name:'Doguyasuji',city:'osaka',category:'Kitchenware/Knives',hours:'10:00–18:00',nearby:'Namba Station',budget:'¥5,000–25,000',notes:'Osaka\'s kitchen street. Japanese knives, takoyaki pans, food models.'},
+];
+
+const BUDGET_CATEGORIES = [
+  {key:'flights',label:'Flights',planned:7000,spent:7000},
+  {key:'hotels',label:'Hotels',planned:7500,spent:0},
+  {key:'food',label:'Food & Drink',planned:4500,spent:0},
+  {key:'trains',label:'Intercity Trains',planned:1200,spent:1040},
+  {key:'local',label:'Local Transport',planned:1000,spent:0},
+  {key:'attractions',label:'Attractions',planned:2000,spent:0},
+  {key:'shopping',label:'Shopping',planned:1800,spent:0},
+  {key:'misc',label:'Misc / Buffer',planned:600,spent:0},
+];
+
+const PACKING = {
+  'Essentials': ['Passports (both)','Flight printouts / booking refs','Travel insurance docs','Phone chargers + cables','Power bank','Japan power adapter (Type A, US-style)','Cash (¥ & ₪)','Credit/debit cards','Pocket WiFi / eSIM','Luggage locks'],
+  'Clothing': ['Light t-shirts ×5','Shorts ×3','Light long pants ×2','Light jacket/cardigan (AC is cold)','Comfortable walking shoes','Sandals/slides','Underwear ×7 (laundry mid-trip)','Socks ×5','Sleepwear','Swimwear (onsen towel provided)'],
+  'Weather Gear': ['Compact umbrella','Packable rain jacket','Sunscreen SPF50+','Sunglasses','Cooling towel','Hand fan / portable fan'],
+  'Health': ['Prescription medications','Basic first-aid kit','Motion sickness pills','Insect repellent','Hand sanitizer','Face masks (optional, common in Japan)'],
+  'Practical': ['Foldable day bag/tote','Ziplock bags (for wet umbrella, laundry)','Coin purse (lots of coins in Japan)','Tissues/wet wipes (not all restrooms have paper)','Reusable water bottle','Laundry detergent pods'],
+};
+
+const DOCUMENTS_LIST = [
+  'Passports — valid 6+ months past return date',
+  'Flight booking confirmation (DZIP76)',
+  'Shinkansen reservations (Res# 2002, 2003)',
+  'Hotel booking confirmations',
+  'Travel insurance policy + emergency number',
+  'Copies of passports (paper + phone photos)',
+  'Emergency contact card (in wallet)',
+  'Credit card company travel notification',
+  'International driving permit (if needed)',
+  'COVID/health documents (check current requirements)',
+  'Japan customs declaration (filled on plane)',
+  'Pocket WiFi / eSIM activation instructions',
+];
+
+const BOOKING_CHECKLIST = [
+  'Flights booked & confirmed',
+  'Tokyo hotel #1 (5 nights, 12–17 Sep)',
+  'Kyoto hotel (2 nights, 17–19 Sep)',
+  'Osaka hotel (5 nights, 19–24 Sep)',
+  'Tokyo hotel #2 (3 nights, 24–27 Sep)',
+  'Shinkansen Tokyo→Kyoto booked',
+  'Shinkansen Osaka→Tokyo booked',
+  'teamLab Borderless tickets',
+  'USJ tickets + Express Pass',
+  'Shibuya Sky tickets',
+  'Travel insurance purchased',
+  'Pocket WiFi / eSIM ordered',
+  'IC cards set up (Suica in Apple Wallet)',
+  'Restaurant reservations (fine dining)',
+  'Notify bank of Japan travel',
+];
+
+const CITY_ACTIVITIES = {
+  tokyo: ['Senso-ji','Shibuya Crossing','Harajuku','Akihabara','Tsukiji Market','Golden Gai','Shinjuku Gyoen','teamLab','Odaiba','Meiji Shrine','Shibuya Sky','Skytree','Ueno Park'],
+  kyoto: ['Fushimi Inari','Arashiyama','Kinkaku-ji','Gion','Nishiki Market','Kiyomizu-dera','Philosopher\'s Path','Nijo Castle'],
+  osaka: ['Dotonbori','Osaka Castle','USJ','Kuromon Market','Shinsekai','Nara Day Trip','Shinsaibashi','Sumiyoshi Taisha'],
+};
+
+const MAP_LOCATIONS = {
+  tokyo: [
+    {name:'Narita Airport (NRT)',cat:'station',x:90,y:15},
+    {name:'Tokyo Station',cat:'station',x:55,y:50},
+    {name:'Shinjuku Station',cat:'station',x:35,y:45},
+    {name:'Shibuya Station',cat:'station',x:35,y:55},
+    {name:'Akihabara',cat:'sight',x:60,y:45},
+    {name:'Asakusa / Senso-ji',cat:'sight',x:63,y:38},
+    {name:'Harajuku / Meiji Jingu',cat:'sight',x:30,y:50},
+    {name:'Tsukiji Market',cat:'food',x:58,y:55},
+    {name:'Golden Gai',cat:'food',x:37,y:42},
+    {name:'Shibuya Sky',cat:'sight',x:33,y:53},
+    {name:'teamLab Borderless',cat:'sight',x:50,y:60},
+    {name:'Tokyo Skytree',cat:'sight',x:65,y:40},
+    {name:'Odaiba',cat:'sight',x:60,y:65},
+    {name:'Ueno Park',cat:'sight',x:58,y:38},
+    {name:'Kappabashi St',cat:'sight',x:61,y:41},
+  ],
+  kyoto: [
+    {name:'Kyoto Station',cat:'station',x:50,y:80},
+    {name:'Fushimi Inari',cat:'sight',x:55,y:85},
+    {name:'Kiyomizu-dera',cat:'sight',x:60,y:70},
+    {name:'Gion District',cat:'sight',x:55,y:65},
+    {name:'Nishiki Market',cat:'food',x:48,y:60},
+    {name:'Kinkaku-ji',cat:'sight',x:35,y:30},
+    {name:'Arashiyama',cat:'sight',x:15,y:40},
+    {name:'Nijo Castle',cat:'sight',x:40,y:50},
+    {name:'Philosopher\'s Path',cat:'sight',x:60,y:45},
+  ],
+  osaka: [
+    {name:'Shin-Osaka Station',cat:'station',x:45,y:20},
+    {name:'Namba Station',cat:'station',x:48,y:55},
+    {name:'Dotonbori',cat:'food',x:50,y:58},
+    {name:'Osaka Castle',cat:'sight',x:60,y:35},
+    {name:'Shinsekai / Tsutenkaku',cat:'sight',x:50,y:65},
+    {name:'Kuromon Market',cat:'food',x:52,y:60},
+    {name:'USJ',cat:'event',x:20,y:45},
+    {name:'Shinsaibashi',cat:'sight',x:47,y:52},
+    {name:'Sumiyoshi Taisha',cat:'sight',x:45,y:78},
+    {name:'Den Den Town',cat:'sight',x:50,y:63},
+  ],
+};
+
+// ==================== STATE ====================
+let state = {};
+function loadState() {
+  try { state = JSON.parse(localStorage.getItem('japan2026') || '{}'); } catch(e) { state = {}; }
+  if (!state.days) state.days = {};
+  if (!state.bookings) state.bookings = {};
+  if (!state.hotels) state.hotels = {};
+  if (!state.budget) state.budget = {};
+  if (!state.packing) state.packing = {};
+  if (!state.documents) state.documents = {};
+  if (!state.bookingChecklist) state.bookingChecklist = {0:true, 5:true, 6:true};
+  if (!state.attractions) state.attractions = {};
+  if (!state.shopping) state.shopping = {};
+  if (!state.notes) state.notes = '';
+  if (!state.attachments) state.attachments = {};
+  if (!state.totalBudget) state.totalBudget = 25600;
+  if (!state.rate) state.rate = 0.0185;
+  if (!state.usdRate) state.usdRate = 3.6;
+  if (!state.nisRate) state.nisRate = 1;
+  if (!state.theme) state.theme = 'dark';
+  if (!state.cities) state.cities = [
+    {id:'tokyo', name:'Tokyo', icon:'🗾', color:'var(--tokyo)'},
+    {id:'kyoto', name:'Kyoto', icon:'⛩', color:'var(--kyoto)'},
+    {id:'osaka', name:'Osaka', icon:'🏯', color:'var(--osaka)'},
+    {id:'transit', name:'Transit', icon:'✈', color:'var(--transit)'}
+  ];
+}
+function saveData() {
+  state.rate = parseFloat(document.getElementById('exchangeRate').value) || 0.0185;
+  const usdEl = document.getElementById('usdRate');
+  if (usdEl) state.usdRate = parseFloat(usdEl.value) || 3.6;
+  state.notes = document.getElementById('notesArea').value;
+  localStorage.setItem('japan2026', JSON.stringify(state));
+}
+
+// ==================== NAV ====================
+document.querySelectorAll('nav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('sec-' + btn.dataset.section).classList.add('active');
+  });
+});
+
+// ==================== COUNTDOWN ====================
+function updateCountdown() {
+  const now = new Date();
+  const diff = TRIP_START - now;
+  const el = document.getElementById('countdown');
+  if (diff <= 0) { el.textContent = "You're in Japan! 🇯🇵"; return; }
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  el.textContent = `${d}d ${h}h ${m}m ${s}s`;
+}
+setInterval(updateCountdown, 1000);
+
+// ==================== QUICK JUMP ====================
+function renderQuickJump() {
+  const sections = ['timeline','master','maps','reservations','transport','hotels','attractions','restaurants','shopping','budget','packing','documents','tips','notes'];
+  const icons = ['📅','📊','🗺','📋','🚄','🏨','🎯','🍜','🛍','💰','🎒','📄','💡','📝'];
+  const wrap = document.getElementById('quickJump');
+  wrap.innerHTML = sections.map((s,i) => `<button onclick="document.querySelector('nav button[data-section=${s}]').click()">${icons[i]} ${s}</button>`).join('');
+}
+
+// ==================== BOOKING CHECKLIST ====================
+function renderBookingChecklist() {
+  const wrap = document.getElementById('bookingChecklist');
+  wrap.innerHTML = BOOKING_CHECKLIST.map((item, i) => {
+    const checked = state.bookingChecklist[i] || false;
+    return `<div class="checklist-item ${checked?'checked':''}">
+      <input type="checkbox" ${checked?'checked':''} onchange="state.bookingChecklist[${i}]=this.checked;this.parentElement.classList.toggle('checked');saveData()">
+      <span>${item}</span></div>`;
+  }).join('');
+}
+
+// ==================== CURRENCY CONVERTER ====================
+function convertCurrency(from) {
+  const rate = parseFloat(document.getElementById('exchangeRate').value) || 0.0185;
+  if (from === 'yen') {
+    const yen = parseFloat(document.getElementById('convYen').value) || 0;
+    document.getElementById('convShekel').value = (yen * rate).toFixed(2);
+  } else {
+    const shekel = parseFloat(document.getElementById('convShekel').value) || 0;
+    document.getElementById('convYen').value = Math.round(shekel / rate);
+  }
+}
+
+// ==================== TIMELINE ====================
+function renderTimeline() {
+  const wrap = document.getElementById('timelineContainer');
+  wrap.innerHTML = DAYS_DATA.map((d, i) => {
+    const sd = state.days[i] || {};
+    const cityClass = d.city === 'transit' ? 'city-transit' : `city-${d.city}`;
+    const cityChip = d.city === 'transit' ? 'chip-transit' : `chip-${d.city}`;
+    const activities = CITY_ACTIVITIES[d.city] || [];
+    const dateStr = new Date(d.date).toLocaleDateString('en-US', {month:'short', day:'numeric'});
+    const dayInCity = getDayInCity(i);
+    const cityNames = {tokyo:'Tokyo',kyoto:'Kyoto',osaka:'Osaka',transit:'Transit'};
+    const dayInCityLabel = d.city === 'transit' ? 'In Transit' : `Day ${dayInCity} in ${cityNames[d.city]}`;
+    return `<div class="card day-card ${cityClass}">
+      <div class="day-header" onclick="toggleDay(${i})">
+        <div>
+          <h3 style="-webkit-text-fill-color:var(--text);">Day ${d.dayNum} · ${d.day} ${dateStr}</h3>
+          <div class="day-meta">
+            <span class="chip ${cityChip}">${dayInCityLabel}</span>
+            ${d.transit ? `<span style="color:var(--text2);font-size:0.8rem;">🚄 ${d.transit}</span>` : ''}
+            ${d.nightIn !== d.dayIn ? `<span style="color:var(--text3);font-size:0.8rem;">🌙 ${d.nightIn}</span>` : ''}
+          </div>
+        </div>
+        <span class="expand-icon ${sd._open?'open':''}" id="exp-${i}">▼</span>
+      </div>
+      <div class="day-body ${sd._open?'open':''}" id="body-${i}">
+        <div class="grid-2" style="margin-bottom:12px;">
+          <div>
+            <label>Plan / To-Do</label>
+            <textarea data-day="${i}" data-field="todo" oninput="syncDayField(${i},'todo',this.value)">${sd.todo || d.todo || ''}</textarea>
+          </div>
+          <div>
+            <label>Meals / Reservations</label>
+            <textarea data-day="${i}" data-field="meals" oninput="syncDayField(${i},'meals',this.value)">${sd.meals || ''}</textarea>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div>
+            <label>Daily Spend (¥)</label>
+            <input type="number" data-day="${i}" data-field="spend" value="${sd.spend || ''}" oninput="syncDayField(${i},'spend',this.value)">
+          </div>
+          <div>
+            <label>Notes</label>
+            <textarea data-day="${i}" data-field="notes" oninput="syncDayField(${i},'notes',this.value)">${sd.notes || d.notes || ''}</textarea>
+          </div>
+        </div>
+        ${activities.length ? `<div class="activity-chips">${activities.map(a => `<span class="activity-chip" onclick="addActivity(${i},'${a.replace(/'/g,"\\'")}')">${a}</span>`).join('')}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleDay(i) {
+  if (!state.days[i]) state.days[i] = {};
+  state.days[i]._open = !state.days[i]._open;
+  const body = document.getElementById('body-' + i);
+  const icon = document.getElementById('exp-' + i);
+  body.classList.toggle('open');
+  icon.classList.toggle('open');
+  saveData();
+}
+
+function syncDayField(i, field, val) {
+  if (!state.days[i]) state.days[i] = {};
+  state.days[i][field] = val;
+  saveData();
+  syncMasterFromTimeline(i, field, val);
+}
+
+function addActivity(i, name) {
+  if (!state.days[i]) state.days[i] = {};
+  const current = state.days[i].todo || '';
+  if (current.includes(name)) return;
+  state.days[i].todo = current ? current + ', ' + name : name;
+  saveData();
+  renderTimeline();
+  renderMaster();
+}
+
+// ==================== MASTER TABLE ====================
+function getDayInCity(index) {
+  let dayCount = 0;
+  let currentCity = DAYS_DATA[index].city;
+  for (let i = 0; i <= index; i++) {
+    if (DAYS_DATA[i].city === currentCity) dayCount++;
+  }
+  return dayCount;
+}
+
+function renderMaster() {
+  const body = document.getElementById('masterBody');
+
+  // Build lookups from dynamic cities list
+  const cityIcons = {}, cityNames = {}, cityColors = {};
+  state.cities.forEach(c => {
+    cityIcons[c.id] = c.icon;
+    cityNames[c.id] = c.name;
+    cityColors[c.id] = c.color;
+  });
+
+  renderCitiesList();
+
+  body.innerHTML = DAYS_DATA.map((d, i) => {
+    const sd = state.days[i] || {};
+    const transit = d.transit || '—';
+    const transitIcon = transit.includes('→') ? (transit.includes('¥') ? '🚅' : '🚄') : (transit.includes('Arrive') ? '✈' : transit.includes('Depart') ? '✈' : '');
+    const cityLabel = cityIcons[d.city] || '';
+    const bgColor = cityColors[d.city] ? cityColors[d.city].replace('var(--', '').replace(')', '') : 'transparent';
+    const txtColor = cityColors[d.city] || 'var(--text)';
+    const dayInCity = getDayInCity(i);
+    const cityDisplayName = d.city === 'transit' ? 'In Transit' : `Day ${dayInCity} in ${cityNames[d.city] || d.city}`;
+    const cityBg = bgColor === 'tokyo' ? 'rgba(22,200,230,0.05)' : bgColor === 'kyoto' ? 'rgba(255,69,210,0.05)' : bgColor === 'osaka' ? 'rgba(255,194,46,0.05)' : 'rgba(123,92,255,0.05)';
+
+    // Build city options from state.cities
+    const cityOptionsHTML = state.cities.map(c => `<option value="${c.id}" ${d.city===c.id?'selected':''}>${c.icon} ${c.name}</option>`).join('');
+
+    return `<tr style="background:${cityBg};border-left:4px solid ${txtColor};padding:8px;transition:all 0.2s;" onmouseover="this.style.boxShadow='0 0 15px rgba(123,92,255,0.15)'" onmouseout="this.style.boxShadow='none'">
+      <td style="font-family:var(--font-display);font-weight:700;font-size:1.1rem;color:${txtColor};padding:8px 4px;">${d.dayNum}</td>
+      <td style="white-space:nowrap;color:var(--text2);font-size:0.85rem;padding:8px 4px;">${d.date.slice(5)}</td>
+      <td style="font-family:var(--font-display);font-weight:500;padding:8px 4px;">${d.day}</td>
+      <td style="padding:8px 4px;"><select onchange="syncDayDataField(${i},'city',this.value);renderMaster()" style="background:${cityBg};border:1px solid var(--border);padding:4px 8px;border-radius:6px;font-size:0.85rem;color:var(--text);font-weight:500;">${cityOptionsHTML}</select></td>
+      <td style="padding:8px 4px;"><input value="${d.nightIn || ''}" onchange="syncDayDataField(${i},'nightIn',this.value)" style="width:140px;background:rgba(0,0,0,0.2);border:1px solid var(--border);padding:6px;border-radius:6px;color:var(--text);" placeholder="Night in..."></td>
+      <td style="padding:8px 4px;"><input value="${d.transit || ''}" onchange="syncDayDataField(${i},'transit',this.value)" style="width:160px;background:rgba(123,92,255,0.08);border:1px solid var(--border);padding:6px;border-radius:6px;color:var(--text);font-size:0.8rem;" placeholder="Transit..."></td>
+      <td style="padding:8px 4px;"><input value="${sd.hotel || ''}" oninput="syncMasterField(${i},'hotel',this.value)" style="width:120px;background:rgba(123,92,255,0.08);border:1px solid var(--border);padding:6px;border-radius:6px;color:var(--text);" placeholder="Hotel"></td>
+      <td style="padding:8px 4px;"><textarea style="width:160px;min-height:35px;background:rgba(123,92,255,0.08);border:1px solid var(--border);padding:6px;border-radius:6px;color:var(--text);font-family:var(--font-body);" oninput="syncMasterField(${i},'todo',this.value)" placeholder="To-Do">${sd.todo || d.todo || ''}</textarea></td>
+      <td style="padding:8px 4px;"><textarea style="width:140px;min-height:35px;background:rgba(0,0,0,0.15);border:1px solid var(--border);padding:6px;border-radius:6px;color:var(--text);font-family:var(--font-body);" oninput="syncMasterField(${i},'notes',this.value)" placeholder="Notes">${sd.notes || d.notes || ''}</textarea></td>
+    </tr>`;
+  }).join('');
+}
+
+function syncMasterField(i, field, val) {
+  if (!state.days[i]) state.days[i] = {};
+  state.days[i][field] = val;
+  saveData();
+  const textarea = document.querySelector(`#sec-timeline [data-day="${i}"][data-field="${field}"]`);
+  if (textarea) textarea.value = val;
+}
+
+function syncDayDataField(i, field, val) {
+  if (DAYS_DATA[i]) {
+    DAYS_DATA[i][field] = val;
+    saveData();
+    renderTimeline();
+  }
+}
+
+function syncMasterFromTimeline(i, field, val) {
+  if (field === 'todo' || field === 'notes' || field === 'hotel') {
+    renderMaster();
+  }
+}
+
+// ==================== CITIES MANAGEMENT ====================
+function renderCitiesList() {
+  const container = document.getElementById('citiesListContainer');
+  container.innerHTML = state.cities.map(city => `
+    <div style="display:flex;align-items:center;gap:6px;background:${city.color.replace('var(--', '').replace(')', '')==='tokyo'?'rgba(22,200,230,0.1)':city.color.replace('var(--', '').replace(')', '')==='kyoto'?'rgba(255,69,210,0.1)':city.color.replace('var(--', '').replace(')', '')==='osaka'?'rgba(255,194,46,0.1)':'rgba(123,92,255,0.1)'};padding:8px 12px;border-radius:8px;border:1px solid ${city.color};">
+      <input value="${city.icon}" onchange="editCity('${city.id}','icon',this.value);renderCitiesList();" style="width:30px;text-align:center;background:transparent;border:none;color:var(--text);font-size:1rem;padding:0;cursor:pointer;">
+      <input value="${city.name}" onchange="editCity('${city.id}','name',this.value);renderCitiesList();" style="flex:1;background:transparent;border:none;color:var(--text);padding:0;cursor:pointer;font-weight:500;">
+      <button onclick="deleteCity('${city.id}')" style="background:transparent;border:none;color:var(--text2);cursor:pointer;padding:0;font-size:0.9rem;">✕</button>
+    </div>
+  `).join('');
+}
+
+function addNewCity() {
+  const name = prompt('Enter city name:');
+  if (!name) return;
+  const icon = prompt('Enter city icon (emoji):') || '📍';
+  const id = name.toLowerCase().replace(/\s+/g,'');
+  state.cities.push({id, name, icon, color:'var(--violet)'});
+  saveData();
+  renderCitiesList();
+  renderMaster();
+}
+
+function editCity(id, field, val) {
+  const city = state.cities.find(c => c.id === id);
+  if (city) {
+    city[field] = val;
+    saveData();
+  }
+}
+
+function deleteCity(id) {
+  if (id === 'transit' || !confirm('Delete this city?')) return;
+  state.cities = state.cities.filter(c => c.id !== id);
+  saveData();
+  renderCitiesList();
+  renderMaster();
+}
+
+// ==================== RESERVATIONS ====================
+function renderReservations() {
+  const wrap = document.getElementById('reservationsContainer');
+  const cats = [...new Set(BOOKINGS.map(b => b.cat))];
+  wrap.innerHTML = cats.map(cat => {
+    const items = BOOKINGS.filter(b => b.cat === cat);
+    return `<h3 style="font-family:var(--font-display);font-size:1.1rem;color:var(--text2);margin:16px 0 8px;text-transform:uppercase;">${cat}</h3>` +
+      items.map(b => {
+        const sb = state.bookings[b.id] || {};
+        const status = sb.status || b.status;
+        const badgeClass = status === 'paid' ? 'badge-paid' : status === 'booked' ? 'badge-booked' : 'badge-tobook';
+        const statusLabel = status === 'paid' ? 'PAID' : status === 'booked' ? 'BOOKED' : 'TO BOOK';
+        return `<div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:start;">
+            <div>
+              <h3 style="-webkit-text-fill-color:var(--text);font-size:1rem;">${b.name}</h3>
+              <div style="color:var(--text2);font-size:0.85rem;">${b.date} · ${b.details}</div>
+              ${b.amount ? `<div style="color:var(--text2);font-size:0.85rem;">¥${b.amount.toLocaleString()}</div>` : ''}
+            </div>
+            <div style="text-align:right;">
+              <span class="badge ${badgeClass} status-cycle" onclick="cycleStatus('${b.id}')">${statusLabel}</span>
+            </div>
+          </div>
+          <div class="grid-2" style="margin-top:10px;">
+            <div>
+              <label>Confirmation #</label>
+              <input value="${sb.conf || b.conf}" oninput="state.bookings['${b.id}']={...state.bookings['${b.id}']||{},conf:this.value};saveData()">
+            </div>
+            <div>
+              <label>Notes</label>
+              <input value="${sb.notes || ''}" oninput="state.bookings['${b.id}']={...state.bookings['${b.id}']||{},notes:this.value};saveData()">
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+  }).join('');
+}
+
+function cycleStatus(id) {
+  if (!state.bookings[id]) state.bookings[id] = {};
+  const order = ['tobook','booked','paid'];
+  const current = state.bookings[id].status || BOOKINGS.find(b => b.id === id).status;
+  const next = order[(order.indexOf(current) + 1) % 3];
+  state.bookings[id].status = next;
+  saveData();
+  renderReservations();
+}
+
+// ==================== HOTELS ====================
+function renderHotels() {
+  const wrap = document.getElementById('hotelsContainer');
+  wrap.innerHTML = HOTELS_DATA.map(h => {
+    const sh = state.hotels[h.id] || {};
+    const cityColor = h.city === 'tokyo' ? 'var(--tokyo)' : h.city === 'kyoto' ? 'var(--kyoto)' : 'var(--osaka)';
+    return `<div class="card" style="border-left:4px solid ${cityColor};">
+      <h3>${h.label}</h3>
+      <div style="color:var(--text2);font-size:0.85rem;margin-bottom:12px;">${h.dates}</div>
+      <label>Hotel Name</label>
+      <input value="${sh.name || ''}" oninput="state.hotels['${h.id}']={...state.hotels['${h.id}']||{},name:this.value};saveData()" placeholder="Enter hotel name...">
+      <label style="margin-top:8px;">Check-in / Check-out Times</label>
+      <input value="${sh.times || ''}" oninput="state.hotels['${h.id}']={...state.hotels['${h.id}']||{},times:this.value};saveData()" placeholder="e.g. 15:00 / 11:00">
+      <label style="margin-top:8px;">Address / Nearest Station</label>
+      <input value="${sh.address || ''}" oninput="state.hotels['${h.id}']={...state.hotels['${h.id}']||{},address:this.value};saveData()" placeholder="Address or station...">
+      <label style="margin-top:8px;">Notes</label>
+      <textarea oninput="state.hotels['${h.id}']={...state.hotels['${h.id}']||{},notes:this.value};saveData()" placeholder="Room type, amenities, WiFi...">${sh.notes || ''}</textarea>
+      <div style="margin-top:8px;font-size:0.8rem;color:var(--text3);">Suggested areas: ${h.neighborhoods}</div>
+    </div>`;
+  }).join('');
+}
+
+// ==================== ATTRACTIONS ====================
+function showAttractions(city) {
+  const filtered = city === 'all' ? ATTRACTIONS : ATTRACTIONS.filter(a => a.city === city);
+  const wrap = document.getElementById('attractionsContainer');
+  wrap.innerHTML = filtered.map((a, idx) => {
+    const key = a.name.replace(/[^a-zA-Z]/g,'');
+    const sa = state.attractions[key] || {};
+    const typeColor = a.type === 'culture' ? 'var(--violet)' : a.type === 'food' ? 'var(--yellow)' : a.type === 'pop' ? 'var(--magenta)' : 'var(--lime)';
+    const cityColor = a.city === 'tokyo' ? 'var(--tokyo)' : a.city === 'kyoto' ? 'var(--kyoto)' : 'var(--osaka)';
+    const stars = [1,2,3,4,5].map(s => `<span class="${(sa.rating||0)>=s?'filled':''}" onclick="rateAttraction('${key}',${s})">${(sa.rating||0)>=s?'★':'☆'}</span>`).join('');
+    return `<div class="card" style="border-left:4px solid ${cityColor};">
+      <div style="display:flex;justify-content:space-between;align-items:start;">
+        <div>
+          <h3 style="-webkit-text-fill-color:var(--text);font-size:1rem;">
+            <input type="checkbox" ${sa.visited?'checked':''} onchange="state.attractions['${key}']={...state.attractions['${key}']||{},visited:this.checked};saveData()" style="width:auto;margin-right:6px;">
+            ${a.name}
+          </h3>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin:4px 0;">
+            <span style="color:${typeColor};font-size:0.75rem;font-family:var(--font-display);text-transform:uppercase;">${a.type}</span>
+            <span style="color:var(--text2);font-size:0.75rem;">${a.cost}</span>
+            <span style="color:var(--text2);font-size:0.75rem;">${a.duration}</span>
+            ${a.book ? '<span style="color:var(--vermilion);font-size:0.75rem;font-weight:600;">BOOK AHEAD</span>' : ''}
+          </div>
+        </div>
+        <div class="stars">${stars}</div>
+      </div>
+      <div style="color:var(--text2);font-size:0.85rem;margin-top:6px;">${a.notes}</div>
+      <div style="margin-top:6px;">
+        <a href="https://www.google.com/maps/search/${encodeURIComponent(a.name + ' ' + a.city + ' Japan')}" target="_blank" rel="noopener"
+          style="color:var(--cyan);font-size:0.8rem;text-decoration:none;">📍 Open in Google Maps</a>
+      </div>
+      <input placeholder="Personal notes..." value="${sa.note||''}" style="margin-top:6px;"
+        oninput="state.attractions['${key}']={...state.attractions['${key}']||{},note:this.value};saveData()">
+    </div>`;
+  }).join('');
+}
+
+function rateAttraction(key, rating) {
+  if (!state.attractions[key]) state.attractions[key] = {};
+  state.attractions[key].rating = state.attractions[key].rating === rating ? 0 : rating;
+  saveData();
+  const currentCity = document.querySelector('#sec-attractions .btn-primary.active')?.textContent?.toLowerCase() || 'all';
+  showAttractions('all');
+}
+
+// ==================== RESTAURANTS ====================
+function showRestaurants(city) {
+  const filtered = RESTAURANTS.filter(r => r.city === city);
+  const wrap = document.getElementById('restaurantsContainer');
+  wrap.innerHTML = filtered.map(r => {
+    const cityColor = r.city === 'tokyo' ? 'var(--tokyo)' : r.city === 'kyoto' ? 'var(--kyoto)' : 'var(--osaka)';
+    return `<div class="card" style="border-left:4px solid ${cityColor};">
+      <div style="display:flex;justify-content:space-between;align-items:start;">
+        <h3 style="-webkit-text-fill-color:var(--text);font-size:1rem;">${r.name}</h3>
+        <span style="color:var(--yellow);font-size:0.85rem;">⭐ ${r.rating}</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0;">
+        <span class="chip" style="background:rgba(123,92,255,0.1);border:1px solid rgba(123,92,255,0.2);color:var(--text);">${r.cuisine}</span>
+        <span style="color:var(--text2);font-size:0.85rem;">${r.price}</span>
+        ${r.reservation ? '<span style="color:var(--vermilion);font-size:0.8rem;font-weight:600;">RESERVATION</span>' : '<span style="color:var(--lime);font-size:0.8rem;">Walk-in OK</span>'}
+      </div>
+      <div style="color:var(--text2);font-size:0.85rem;line-height:1.6;">
+        <strong>Signature:</strong> ${r.signature}<br>
+        <strong>Hours:</strong> ${r.hours}<br>
+        <strong>Vegetarian:</strong> ${r.veg}<br>
+        ${r.notes}
+      </div>
+      <a href="https://www.google.com/maps/search/${encodeURIComponent(r.name + ' ' + r.city + ' Japan')}" target="_blank" rel="noopener"
+        style="color:var(--cyan);font-size:0.8rem;text-decoration:none;display:inline-block;margin-top:6px;">📍 Google Maps</a>
+    </div>`;
+  }).join('');
+}
+
+// ==================== SHOPPING ====================
+function showShopping(city) {
+  const filtered = SHOPPING_DATA.filter(s => s.city === city);
+  const wrap = document.getElementById('shoppingContainer');
+  wrap.innerHTML = filtered.map(s => {
+    const key = s.name.replace(/[^a-zA-Z]/g,'');
+    const ss = state.shopping[key] || {};
+    const cityColor = s.city === 'tokyo' ? 'var(--tokyo)' : s.city === 'kyoto' ? 'var(--kyoto)' : 'var(--osaka)';
+    return `<div class="card" style="border-left:4px solid ${cityColor};">
+      <h3 style="-webkit-text-fill-color:var(--text);font-size:1rem;">
+        <input type="checkbox" ${ss.visited?'checked':''} style="width:auto;margin-right:6px;"
+          onchange="state.shopping['${key}']={...state.shopping['${key}']||{},visited:this.checked};saveData()">
+        ${s.name}
+      </h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0;">
+        <span class="chip" style="background:rgba(123,92,255,0.1);border:1px solid rgba(123,92,255,0.2);color:var(--text);">${s.category}</span>
+        <span style="color:var(--text2);font-size:0.85rem;">${s.budget}</span>
+      </div>
+      <div style="color:var(--text2);font-size:0.85rem;line-height:1.6;">
+        <strong>Hours:</strong> ${s.hours} · <strong>Near:</strong> ${s.nearby}<br>
+        ${s.notes}
+      </div>
+      <input placeholder="Wishlist items..." value="${ss.wishlist||''}" style="margin-top:6px;"
+        oninput="state.shopping['${key}']={...state.shopping['${key}']||{},wishlist:this.value};saveData()">
+    </div>`;
+  }).join('');
+}
+
+// ==================== MAPS ====================
+let currentMapCity = 'tokyo';
+let hiddenCats = {};
+let googleMap = null;
+let mapMarkers = [];
+
+const CITY_COORDS = {
+  tokyo: {lat: 35.6762, lng: 139.6503, zoom: 12},
+  kyoto: {lat: 35.0116, lng: 135.7681, zoom: 12},
+  osaka: {lat: 34.6937, lng: 135.5023, zoom: 12}
+};
+
+function getPOIsForCity(city) {
+  const pois = [];
+  const catEmojis = {hotel:'🛏',sight:'⛩',food:'🍜',shop:'🛍',station:'🚉'};
+
+  // Hotels
+  HOTELS_DATA.forEach(h => {
+    if (h.city === city) {
+      pois.push({name: h.label, cat: 'hotel', type: 'Hotel', emoji: '🛏'});
+    }
+  });
+
+  // Attractions
+  ATTRACTIONS.forEach(a => {
+    if (a.city === city) {
+      pois.push({name: a.name, cat: 'sight', type: 'Attraction', emoji: '⛩', cost: a.cost});
+    }
+  });
+
+  // Restaurants
+  RESTAURANTS.forEach(r => {
+    if (r.city === city) {
+      pois.push({name: r.name, cat: 'food', type: 'Restaurant', emoji: '🍜', cuisine: r.cuisine});
+    }
+  });
+
+  // Shopping
+  SHOPPING_DATA.forEach(s => {
+    if (s.city === city) {
+      pois.push({name: s.name, cat: 'shop', type: 'Shop', emoji: '🛍', category: s.category});
+    }
+  });
+
+  return pois;
+}
+
+function showMap(city) {
+  currentMapCity = city;
+  renderMap();
+}
+
+function toggleMapCat(el) {
+  const cat = el.dataset.cat;
+  hiddenCats[cat] = !hiddenCats[cat];
+  el.classList.toggle('dim');
+  renderMap();
+}
+
+function renderMap() {
+  const coords = CITY_COORDS[currentMapCity];
+  if (!coords) return;
+
+  const mapEl = document.getElementById('googleMap');
+  const apiNote = document.getElementById('mapApiNote');
+
+  if (!window.google || !window.google.maps) {
+    if (apiNote) apiNote.style.display = 'block';
+    return;
+  }
+  if (apiNote) apiNote.style.display = 'none';
+
+  if (!googleMap) {
+    googleMap = new google.maps.Map(mapEl, {
+      zoom: coords.zoom,
+      center: {lat: coords.lat, lng: coords.lng},
+      styles: [
+        {elementType: 'geometry', stylers: [{color: '#242f3e'}]},
+        {elementType: 'labels.text.stroke', stylers: [{color: '#242f3e'}]},
+        {elementType: 'labels.text.fill', stylers: [{color: '#746855'}]},
+        {featureType: 'water', elementType: 'geometry', stylers: [{color: '#17263c'}]},
+        {featureType: 'road', elementType: 'geometry', stylers: [{color: '#38414e'}]}
+      ]
+    });
+  } else {
+    googleMap.setCenter({lat: coords.lat, lng: coords.lng});
+    googleMap.setZoom(coords.zoom);
+  }
+
+  mapMarkers.forEach(m => m.setMap(null));
+  mapMarkers = [];
+
+  const pois = getPOIsForCity(currentMapCity);
+  const catColors = {hotel:'#FF45D2',sight:'#7B5CFF',food:'#FFC22E',shop:'#1FE0A0',station:'#16C8E6'};
+
+  pois.forEach(poi => {
+    if (hiddenCats[poi.cat]) return;
+
+    const geocoder = new google.maps.Geocoder();
+    const query = poi.name + ', ' + currentMapCity + ', Japan';
+
+    geocoder.geocode({address: query}, (results, status) => {
+      if (status === 'OK' && results[0]) {
+        const location = results[0].geometry.location;
+        const marker = new google.maps.Marker({
+          map: googleMap,
+          position: location,
+          title: poi.name,
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 8,
+            fillColor: catColors[poi.cat] || '#7B5CFF',
+            fillOpacity: 0.9,
+            strokeColor: '#fff',
+            strokeWeight: 2
+          }
+        });
+
+        const infoText = `<div style="color:#000;padding:8px;"><strong>${poi.name}</strong><br>${poi.type}${poi.cost ? '<br>' + poi.cost : ''}${poi.cuisine ? '<br>' + poi.cuisine : ''}${poi.category ? '<br>' + poi.category : ''}</div>`;
+        const infoWindow = new google.maps.InfoWindow({content: infoText});
+
+        marker.addListener('click', () => {
+          mapMarkers.forEach(m => m.infoWindow && m.infoWindow.close());
+          infoWindow.open(googleMap, marker);
+        });
+
+        marker.infoWindow = infoWindow;
+        mapMarkers.push(marker);
+      }
+    });
+  });
+}
+
+// ==================== BUDGET ====================
+function updateDashBudget() {
+  document.getElementById('dashBudgetDisplay').textContent = '₪' + (state.totalBudget || 25600).toLocaleString();
+}
+
+function renderBudget() {
+  const yenRate = parseFloat(document.getElementById('exchangeRate').value) || 0.0185;
+  const usdRate = parseFloat(document.getElementById('usdRate').value) || 3.6;
+  document.getElementById('budgetRate').value = yenRate;
+  document.getElementById('usdRate').value = usdRate;
+  document.getElementById('totalBudgetInput').value = state.totalBudget || 25600;
+  state.usdRate = usdRate;
+  const body = document.getElementById('budgetBody');
+  let totalPlanned = 0, totalSpentNIS = 0;
+
+  body.innerHTML = BUDGET_CATEGORIES.map(c => {
+    const sb = state.budget[c.key] || {};
+    const planned = sb.planned !== undefined ? sb.planned : c.planned;
+    const spent = sb.spent !== undefined ? sb.spent : c.spent;
+    const spentCur = sb.spentCur || 'nis';
+
+    let spentInNIS = spent;
+    if (spentCur === 'usd') { spentInNIS = spent * usdRate; }
+    else if (spentCur === 'yen') { spentInNIS = spent * yenRate; }
+
+    totalPlanned += planned;
+    totalSpentNIS += spentInNIS;
+    const remaining = planned - spentInNIS;
+    const pct = planned > 0 ? Math.min((spentInNIS / planned) * 100, 100) : 0;
+    const over = spentInNIS > planned;
+    const curSymbols = {nis:'₪',usd:'$',yen:'¥'};
+
+    return `<tr>
+      <td style="font-weight:500;">${c.label}</td>
+      <td><input type="number" value="${planned}" style="width:100px;" onchange="state.budget['${c.key}']={...state.budget['${c.key}']||{},planned:Number(this.value)};saveData();renderBudget()"></td>
+      <td>
+        <div style="display:flex;gap:4px;">
+          <input type="number" value="${spent}" style="width:70px;" onchange="state.budget['${c.key}']={...state.budget['${c.key}']||{},spent:Number(this.value)};saveData();renderBudget()">
+          <select style="width:50px;" onchange="state.budget['${c.key}']={...state.budget['${c.key}']||{},spentCur:this.value};saveData();renderBudget()">
+            <option value="nis" ${spentCur==='nis'?'selected':''}>₪ NIS</option>
+            <option value="usd" ${spentCur==='usd'?'selected':''}>$ USD</option>
+            <option value="yen" ${spentCur==='yen'?'selected':''}>¥ JPY</option>
+          </select>
+        </div>
+        <div style="font-size:0.7rem;color:var(--text3);margin-top:2px;">= ₪${spentInNIS.toFixed(0)}</div>
+      </td>
+      <td style="color:${over?'var(--vermilion)':'var(--lime)'};">₪${remaining.toLocaleString()}</td>
+      <td style="width:200px;"><div class="budget-bar-wrap"><div class="budget-bar ${over?'over':'under'}" style="width:${pct}%"></div></div></td>
+    </tr>`;
+  }).join('');
+
+  const totalRemaining = totalPlanned - totalSpentNIS;
+  const dailyAvg = totalSpentNIS > 0 ? (totalSpentNIS / 18).toFixed(0) : 0;
+  document.getElementById('budgetFoot').innerHTML = `<tr style="font-weight:700;border-top:2px solid var(--border);">
+    <td>TOTAL</td>
+    <td>₪${totalPlanned.toLocaleString()}</td>
+    <td>₪${totalSpentNIS.toLocaleString()}</td>
+    <td style="color:${totalRemaining>=0?'var(--lime)':'var(--vermilion)'};">₪${totalRemaining.toLocaleString()}</td>
+    <td style="font-size:0.8rem;color:var(--text2);">Daily avg: ₪${dailyAvg}</td>
+  </tr>`;
+}
+
+// ==================== PACKING ====================
+function renderPacking() {
+  const wrap = document.getElementById('packingContainer');
+  wrap.innerHTML = Object.entries(PACKING).map(([cat, items]) => {
+    return `<div class="card">
+      <h3>${cat}</h3>
+      ${items.map((item, i) => {
+        const key = cat + '_' + i;
+        const checked = state.packing[key] || false;
+        return `<div class="checklist-item ${checked?'checked':''}">
+          <input type="checkbox" ${checked?'checked':''} onchange="state.packing['${key}']=this.checked;this.parentElement.classList.toggle('checked');saveData()">
+          <span>${item}</span></div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+
+// ==================== DOCUMENTS ====================
+function renderDocuments() {
+  const wrap = document.getElementById('documentsChecklist');
+  wrap.innerHTML = DOCUMENTS_LIST.map((item, i) => {
+    const checked = state.documents[i] || false;
+    return `<div class="checklist-item ${checked?'checked':''}">
+      <input type="checkbox" ${checked?'checked':''} onchange="state.documents[${i}]=this.checked;this.parentElement.classList.toggle('checked');saveData()">
+      <span>${item}</span></div>`;
+  }).join('');
+}
+
+// ==================== THEME ====================
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', next);
+  state.theme = next;
+  saveData();
+}
+
+// ==================== ONLINE/OFFLINE ====================
+function updateStatus() {
+  const pill = document.getElementById('statusPill');
+  if (navigator.onLine) { pill.textContent = 'ONLINE'; pill.className = 'status-pill online'; }
+  else { pill.textContent = 'OFFLINE'; pill.className = 'status-pill offline'; }
+}
+window.addEventListener('online', updateStatus);
+window.addEventListener('offline', updateStatus);
+
+// ==================== PDF ====================
+function exportPDF() { window.print(); }
+
+function downloadHTML() {
+  const html = document.documentElement.outerHTML;
+  const blob = new Blob(['<!DOCTYPE html>\n' + html], {type: 'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'japan-planner-2026.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ==================== CHAT ====================
+let apiKey = '';
+let chatHistory = [];
+
+function toggleChat() {
+  document.getElementById('chatOverlay').classList.toggle('open');
+}
+
+function setApiKey() {
+  apiKey = document.getElementById('apiKeyInput').value.trim();
+  if (apiKey) {
+    document.getElementById('chatApiKey').style.display = 'none';
+    document.getElementById('chatMessages').style.display = 'block';
+    document.getElementById('chatInputWrap').style.display = 'flex';
+    addChatMsg('ai', 'Konnichiwa! 🇯🇵 I\'m your Japan trip assistant. Ask me anything about your itinerary, recommendations, budget, logistics, or Japanese culture!');
+  }
+}
+
+function addChatMsg(role, text) {
+  const wrap = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + role;
+  div.textContent = text;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  addChatMsg('user', msg);
+
+  const tripContext = `Trip: Japan Sep 11-28 2026, 2 people. Cities: Tokyo (5+3 nights), Kyoto (2 nights), Osaka (5 nights). Budget: ₪25,600. Flights booked (DZIP76). Shinkansen booked (Tokyo→Kyoto Sep 17, Osaka→Tokyo Sep 24). Hotels not yet booked. Interests: food, culture, pop culture, nature.`;
+
+  chatHistory.push({role: 'user', content: msg});
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1024,
+        system: `You are a helpful Japan travel assistant. Context: ${tripContext}. Be concise, practical, and enthusiastic. Use emoji sparingly. Give specific actionable advice.`,
+        messages: chatHistory.slice(-10)
+      })
+    });
+    const data = await resp.json();
+    const reply = data.content?.[0]?.text || data.error?.message || 'Sorry, I couldn\'t process that.';
+    chatHistory.push({role: 'assistant', content: reply});
+    addChatMsg('ai', reply);
+  } catch(e) {
+    addChatMsg('ai', 'Connection error. Check your API key and try again.');
+  }
+}
+
+// ==================== ATTACHMENTS ====================
+const ATTACH_CATS = {
+  flights: {icon:'✈',label:'Flights'},
+  hotels: {icon:'🏨',label:'Hotels'},
+  trains: {icon:'🚅',label:'Trains'},
+  attractions: {icon:'🎫',label:'Attractions'},
+  restaurants: {icon:'🍜',label:'Restaurants'},
+  insurance: {icon:'🛡',label:'Insurance'},
+  other: {icon:'📁',label:'Other'}
+};
+
+const FILE_ICONS = {
+  'application/pdf':'📕',
+  'image/jpeg':'🖼',
+  'image/png':'🖼',
+  'image/gif':'🖼',
+  'image/webp':'🖼',
+  'text/plain':'📝',
+  'default':'📄'
+};
+
+function initAttachDrop() {
+  const drop = document.getElementById('attachDrop');
+  const fileInput = document.getElementById('attachFileInput');
+  const chooseBtn = document.getElementById('attachChooseBtn');
+  if (!drop || !fileInput) return;
+
+  chooseBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    fileInput.click();
+  });
+
+  drop.addEventListener('click', function(e) {
+    e.preventDefault();
+    fileInput.click();
+  });
+
+  drop.addEventListener('dragenter', function(e) { e.preventDefault(); drop.classList.add('dragover'); });
+  drop.addEventListener('dragover', function(e) { e.preventDefault(); drop.classList.add('dragover'); });
+  drop.addEventListener('dragleave', function(e) { e.preventDefault(); drop.classList.remove('dragover'); });
+  drop.addEventListener('drop', function(e) {
+    e.preventDefault();
+    drop.classList.remove('dragover');
+    if (e.dataTransfer.files.length) processFiles(e.dataTransfer.files);
+  });
+
+  fileInput.addEventListener('change', function() {
+    if (this.files && this.files.length > 0) {
+      processFiles(this.files);
+    }
+  });
+}
+
+function processFiles(fileList) {
+  var cat = document.getElementById('attachCatSelect').value;
+  if (!state.attachments) state.attachments = {};
+  if (!state.attachments[cat]) state.attachments[cat] = [];
+
+  var files = Array.prototype.slice.call(fileList);
+  var maxFileSize = 2 * 1024 * 1024;
+  var toProcess = [];
+
+  for (var i = 0; i < files.length; i++) {
+    if (files[i].size > maxFileSize) {
+      alert(files[i].name + ' is too large (' + formatSize(files[i].size) + '). Max 2MB per file.');
+    } else {
+      toProcess.push(files[i]);
+    }
+  }
+
+  if (toProcess.length === 0) return;
+
+  var done = 0;
+  for (var j = 0; j < toProcess.length; j++) {
+    (function(file) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        state.attachments[cat].push({
+          name: file.name,
+          type: file.type || 'application/octet-stream',
+          size: file.size,
+          data: e.target.result,
+          date: new Date().toISOString().slice(0,10),
+          id: Date.now() + '_' + Math.random().toString(36).slice(2,8)
+        });
+        done++;
+        if (done === toProcess.length) {
+          try {
+            localStorage.setItem('japan2026', JSON.stringify(state));
+            renderAttachments();
+          } catch(err) {
+            state.attachments[cat].splice(-done);
+            alert('Storage full! Remove some files first.');
+            renderAttachments();
+          }
+          document.getElementById('attachFileInput').value = '';
+        }
+      };
+      reader.onerror = function() {
+        done++;
+        alert('Failed to read: ' + file.name);
+        if (done === toProcess.length) {
+          document.getElementById('attachFileInput').value = '';
+        }
+      };
+      reader.readAsDataURL(file);
+    })(toProcess[j]);
+  }
+}
+
+function deleteAttachment(cat, id) {
+  if (!state.attachments || !state.attachments[cat]) return;
+  state.attachments[cat] = state.attachments[cat].filter(f => f.id !== id);
+  if (state.attachments[cat].length === 0) delete state.attachments[cat];
+  saveData();
+  renderAttachments();
+}
+
+function downloadAttachment(cat, id) {
+  if (!state.attachments || !state.attachments[cat]) return;
+  const file = state.attachments[cat].find(f => f.id === id);
+  if (!file) return;
+  const a = document.createElement('a');
+  a.href = file.data;
+  a.download = file.name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function downloadAllCategory(cat) {
+  if (!state.attachments || !state.attachments[cat]) return;
+  state.attachments[cat].forEach(file => {
+    const a = document.createElement('a');
+    a.href = file.data;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  });
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function getStorageUsed() {
+  try {
+    const data = localStorage.getItem('japan2026') || '';
+    return new Blob([data]).size;
+  } catch(e) { return 0; }
+}
+
+function renderAttachments() {
+  const wrap = document.getElementById('attachmentsContainer');
+  if (!wrap) return;
+  const attachments = state.attachments || {};
+  const totalFiles = Object.values(attachments).reduce((sum, arr) => sum + arr.length, 0);
+
+  if (totalFiles === 0) {
+    wrap.innerHTML = '<div class="card" style="text-align:center;color:var(--text3);padding:40px;">' +
+      '<div style="font-size:2.5rem;margin-bottom:8px;">📂</div>' +
+      '<div style="font-family:var(--font-display);font-size:1rem;">No attachments yet</div>' +
+      '<div style="font-size:0.85rem;margin-top:4px;">Upload flight confirmations, hotel bookings, train tickets, and more</div></div>';
+  } else {
+    wrap.innerHTML = Object.entries(ATTACH_CATS).map(([key, cat]) => {
+      const files = attachments[key];
+      if (!files || files.length === 0) return '';
+      return '<div class="card attach-cat">' +
+        '<div class="attach-cat-header">' + cat.icon + ' ' + cat.label +
+        ' <span class="attach-count">' + files.length + '</span>' +
+        '<button class="btn" style="margin-left:auto;font-size:0.7rem;padding:4px 12px;' +
+        'background:rgba(123,92,255,0.15);color:var(--text);" ' +
+        'onclick="downloadAllCategory(\'' + key + '\')" title="Download all">⬇ All</button></div>' +
+        files.map(f => {
+          const icon = FILE_ICONS[f.type] || FILE_ICONS['default'];
+          return '<div class="attach-file">' +
+            '<div class="attach-file-info">' +
+            '<span class="attach-file-icon">' + icon + '</span>' +
+            '<div style="min-width:0;">' +
+            '<div class="attach-file-name">' + f.name + '</div>' +
+            '<div class="attach-file-meta">' + formatSize(f.size) + ' · Added ' + f.date + '</div>' +
+            '</div></div>' +
+            '<div class="attach-file-actions">' +
+            '<button onclick="downloadAttachment(\'' + key + '\',\'' + f.id + '\')" title="Download">⬇</button>' +
+            '<button class="del" onclick="if(confirm(\'Delete ' + f.name.replace(/'/g, "\\'") + '?\'))deleteAttachment(\'' + key + '\',\'' + f.id + '\')" title="Delete">✕</button>' +
+            '</div></div>';
+        }).join('') +
+        '</div>';
+    }).join('');
+  }
+
+  const used = getStorageUsed();
+  const maxStorage = 30 * 1024 * 1024;
+  const pct = Math.min((used / maxStorage) * 100, 100);
+  const usedEl = document.getElementById('storageUsed');
+  const barEl = document.getElementById('storageBar');
+  if (usedEl) usedEl.textContent = formatSize(used) + ' / 30 MB';
+  if (barEl) {
+    barEl.style.width = pct + '%';
+    barEl.className = 'budget-bar ' + (pct > 80 ? 'over' : 'under');
+  }
+}
+
+// ==================== INIT ====================
+function init() {
+  loadState();
+  document.getElementById('exchangeRate').value = state.rate;
+  const usdEl = document.getElementById('usdRate');
+  if (usdEl) usdEl.value = state.usdRate;
+  document.getElementById('notesArea').value = state.notes || '';
+  if (state.theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+  updateCountdown();
+  updateStatus();
+  renderQuickJump();
+  renderBookingChecklist();
+  renderTimeline();
+  renderMaster();
+  renderReservations();
+  renderHotels();
+  showAttractions('all');
+  showRestaurants('tokyo');
+  showShopping('tokyo');
+  renderMap();
+  renderBudget();
+  updateDashBudget();
+  renderPacking();
+  renderDocuments();
+  initAttachDrop();
+  renderAttachments();
+}
+
+init();
+</script>
+</body>
+</html>

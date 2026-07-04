@@ -2099,42 +2099,71 @@ function deleteAttachment(cat, id) {
   renderAttachments();
 }
 
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+}
+
 function downloadAttachment(cat, id) {
   if (!state.attachments || !state.attachments[cat]) return;
   const file = state.attachments[cat].find(f => f.id === id);
   if (!file) return;
 
-  try {
-    const a = document.createElement('a');
-    a.href = file.data;
-    a.download = file.name;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => document.body.removeChild(a), 100);
-  } catch (e) {
-    // Fallback: open in new window if download fails
-    window.open(file.data, '_blank');
+  if (isIOS()) {
+    // iOS: open in new tab using window.open with target blank
+    // This allows user to long-press and save or share
+    const newWindow = window.open();
+    if (newWindow) {
+      newWindow.location.href = file.data;
+    } else {
+      alert('Please allow popups to download. Open in new tab: ' + file.name);
+    }
+  } else {
+    // Desktop: use standard download approach
+    try {
+      const a = document.createElement('a');
+      a.href = file.data;
+      a.download = file.name;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => document.body.removeChild(a), 100);
+    } catch (e) {
+      window.open(file.data, '_blank');
+    }
   }
 }
 
 function downloadAllCategory(cat) {
   if (!state.attachments || !state.attachments[cat]) return;
-  state.attachments[cat].forEach((file, idx) => {
-    setTimeout(() => {
-      try {
-        const a = document.createElement('a');
-        a.href = file.data;
-        a.download = file.name;
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => document.body.removeChild(a), 100);
-      } catch (e) {
-        window.open(file.data, '_blank');
-      }
-    }, idx * 500);
-  });
+
+  if (isIOS()) {
+    // iOS: open files one at a time with delay to avoid popup blocking
+    state.attachments[cat].forEach((file, idx) => {
+      setTimeout(() => {
+        const newWindow = window.open();
+        if (newWindow) {
+          newWindow.location.href = file.data;
+        }
+      }, idx * 800);
+    });
+  } else {
+    // Desktop: download all files
+    state.attachments[cat].forEach((file, idx) => {
+      setTimeout(() => {
+        try {
+          const a = document.createElement('a');
+          a.href = file.data;
+          a.download = file.name;
+          a.style.display = 'none';
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => document.body.removeChild(a), 100);
+        } catch (e) {
+          window.open(file.data, '_blank');
+        }
+      }, idx * 500);
+    });
+  }
 }
 
 function formatSize(bytes) {

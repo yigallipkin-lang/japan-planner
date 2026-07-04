@@ -2195,28 +2195,58 @@ function deleteAttachment(cat, id) {
   renderAttachments();
 }
 
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+}
+
 function downloadAttachment(cat, id) {
   if (!state.attachments || !state.attachments[cat]) return;
   const file = state.attachments[cat].find(f => f.id === id);
   if (!file) return;
-  const a = document.createElement('a');
-  a.href = file.data;
-  a.download = file.name;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
 
-function downloadAllCategory(cat) {
-  if (!state.attachments || !state.attachments[cat]) return;
-  state.attachments[cat].forEach(file => {
+  if (isIOS()) {
+    // iOS: open in new window to allow save/share
+    const newWindow = window.open();
+    newWindow.document.write('<iframe src="' + file.data + '" style="border:none;width:100%;height:100%;"></iframe>');
+    setTimeout(() => {
+      newWindow.document.title = file.name;
+    }, 100);
+  } else {
+    // Desktop: use standard download approach
     const a = document.createElement('a');
     a.href = file.data;
     a.download = file.name;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  });
+  }
+}
+
+function downloadAllCategory(cat) {
+  if (!state.attachments || !state.attachments[cat]) return;
+
+  if (isIOS()) {
+    // iOS: open files one by one in new windows
+    state.attachments[cat].forEach((file, index) => {
+      setTimeout(() => {
+        const newWindow = window.open();
+        newWindow.document.write('<iframe src="' + file.data + '" style="border:none;width:100%;height:100%;"></iframe>');
+        setTimeout(() => {
+          newWindow.document.title = file.name;
+        }, 100);
+      }, index * 500); // Stagger opens to avoid popup blocking
+    });
+  } else {
+    // Desktop: download all files
+    state.attachments[cat].forEach(file => {
+      const a = document.createElement('a');
+      a.href = file.data;
+      a.download = file.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+  }
 }
 
 function formatSize(bytes) {

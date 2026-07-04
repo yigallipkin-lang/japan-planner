@@ -6,7 +6,6 @@
 <title>Japan 2026 Trip Planner</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=M+PLUS+Rounded+1c:wght@300;400;500;700&display=swap" rel="stylesheet">
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBiJu3f2RTFmlgtnufI6FjWGu-KqEDdBjc&libraries=marker&language=en"></script>
-<script src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key=""></script>
 <style>
 :root {
   --cyan: #16C8E6; --violet: #7B5CFF; --magenta: #FF45D2;
@@ -846,9 +845,6 @@ nav button:hover::before { opacity:1; }
       </div>
       <button class="btn btn-primary" style="margin-top:18px;" id="attachChooseBtn">
         📎 Choose Files
-      </button>
-      <button class="btn" style="margin-top:18px;" id="attachDropboxBtn" title="Upload files from Dropbox">
-        ☁ Dropbox
       </button>
       <input type="file" id="attachFileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.doc,.docx,.txt"
         style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">
@@ -2036,98 +2032,6 @@ function initAttachDrop() {
       processFiles(this.files);
     }
   });
-
-  // Dropbox button
-  const dropboxBtn = document.getElementById('attachDropboxBtn');
-  if (dropboxBtn) {
-    dropboxBtn.addEventListener('click', openDropboxChooser);
-  }
-}
-
-function openDropboxChooser() {
-  // Open a simple file input that can access Dropbox files through browser
-  // This creates a Dropbox file picker using the Chooser API
-  if (window.DbxChooser) {
-    new window.DbxChooser({
-      success: function(files) {
-        downloadDropboxFiles(files);
-      },
-      cancel: function() {},
-      linkType: 'preview',
-      multiselect: true,
-      extensions: ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.doc', '.docx', '.txt', '.xlsx', '.ppt', '.pptx'],
-      folderSelect: false
-    }).launch();
-  } else {
-    // Fallback: guide user to open Dropbox in a new window
-    alert('Dropbox file picker not loaded. Opening Dropbox.com - please download your files and select "Choose Files" to upload.');
-    window.open('https://www.dropbox.com', '_blank');
-  }
-}
-
-function downloadDropboxFiles(files) {
-  // Process Dropbox files by downloading them
-  var cat = document.getElementById('attachCatSelect').value;
-  if (!state.attachments) state.attachments = {};
-  if (!state.attachments[cat]) state.attachments[cat] = [];
-
-  var maxFileSize = 2 * 1024 * 1024;
-  var processedCount = 0;
-  var totalToProcess = files.length;
-
-  files.forEach(function(fileObj) {
-    // Dropbox returns files with name and link properties
-    // We need to download the file content
-    var xhr = new XMLHttpRequest();
-    xhr.responseType = 'blob';
-
-    xhr.onload = function() {
-      if (xhr.status === 200) {
-        var blob = xhr.response;
-        if (blob.size > maxFileSize) {
-          alert(fileObj.name + ' is too large (' + formatSize(blob.size) + '). Max 2MB per file.');
-          processedCount++;
-        } else {
-          var reader = new FileReader();
-          reader.onload = function(e) {
-            state.attachments[cat].push({
-              name: fileObj.name,
-              type: blob.type || 'application/octet-stream',
-              size: blob.size,
-              data: e.target.result,
-              date: new Date().toISOString().slice(0,10),
-              id: Date.now() + '_' + Math.random().toString(36).slice(2,8)
-            });
-            processedCount++;
-            if (processedCount === totalToProcess) {
-              try {
-                localStorage.setItem('japan2026', JSON.stringify(state));
-                renderAttachments();
-              } catch(err) {
-                state.attachments[cat].splice(-processedCount);
-                alert('Storage full! Remove some files first.');
-                renderAttachments();
-              }
-            }
-          };
-          reader.readAsDataURL(blob);
-        }
-      } else {
-        processedCount++;
-        alert('Failed to download: ' + fileObj.name);
-      }
-    };
-
-    xhr.onerror = function() {
-      processedCount++;
-      alert('Error downloading: ' + fileObj.name);
-    };
-
-    // Add dl=1 parameter to force download instead of preview
-    var downloadUrl = fileObj.link.replace('?dl=0', '?dl=1');
-    xhr.open('GET', downloadUrl);
-    xhr.send();
-  });
 }
 
 function processFiles(fileList) {
@@ -2195,58 +2099,42 @@ function deleteAttachment(cat, id) {
   renderAttachments();
 }
 
-function isIOS() {
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-}
-
 function downloadAttachment(cat, id) {
   if (!state.attachments || !state.attachments[cat]) return;
   const file = state.attachments[cat].find(f => f.id === id);
   if (!file) return;
 
-  if (isIOS()) {
-    // iOS: open in new window to allow save/share
-    const newWindow = window.open();
-    newWindow.document.write('<iframe src="' + file.data + '" style="border:none;width:100%;height:100%;"></iframe>');
-    setTimeout(() => {
-      newWindow.document.title = file.name;
-    }, 100);
-  } else {
-    // Desktop: use standard download approach
+  try {
     const a = document.createElement('a');
     a.href = file.data;
     a.download = file.name;
+    a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
+    setTimeout(() => document.body.removeChild(a), 100);
+  } catch (e) {
+    // Fallback: open in new window if download fails
+    window.open(file.data, '_blank');
   }
 }
 
 function downloadAllCategory(cat) {
   if (!state.attachments || !state.attachments[cat]) return;
-
-  if (isIOS()) {
-    // iOS: open files one by one in new windows
-    state.attachments[cat].forEach((file, index) => {
-      setTimeout(() => {
-        const newWindow = window.open();
-        newWindow.document.write('<iframe src="' + file.data + '" style="border:none;width:100%;height:100%;"></iframe>');
-        setTimeout(() => {
-          newWindow.document.title = file.name;
-        }, 100);
-      }, index * 500); // Stagger opens to avoid popup blocking
-    });
-  } else {
-    // Desktop: download all files
-    state.attachments[cat].forEach(file => {
-      const a = document.createElement('a');
-      a.href = file.data;
-      a.download = file.name;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    });
-  }
+  state.attachments[cat].forEach((file, idx) => {
+    setTimeout(() => {
+      try {
+        const a = document.createElement('a');
+        a.href = file.data;
+        a.download = file.name;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => document.body.removeChild(a), 100);
+      } catch (e) {
+        window.open(file.data, '_blank');
+      }
+    }, idx * 500);
+  });
 }
 
 function formatSize(bytes) {

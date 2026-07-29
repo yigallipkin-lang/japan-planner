@@ -1018,37 +1018,38 @@ nav button:hover::before { opacity:1; }
 // ==================== DATA ====================
 const TRIP_START = new Date('2026-09-11T19:45:00+03:00');
 const DAYS_DATA = [
-  {date:'2026-09-11',day:'Fri',dayNum:1,dayIn:'Tel Aviv',nightIn:'✈ In-flight',transit:'EK2471→EK318 19:45',city:'transit',hotel:'',todo:'',notes:'Depart TLV 19:45'},
-  {date:'2026-09-12',day:'Sat',dayNum:2,dayIn:'✈→Tokyo',nightIn:'Tokyo',transit:'Arrive NRT 17:35',city:'tokyo',hotel:'',todo:'',notes:'Land 17:35, get to hotel, konbini dinner'},
-  {date:'2026-09-13',day:'Sun',dayNum:3,dayIn:'Tokyo',nightIn:'Tokyo',transit:'',city:'tokyo',hotel:'',todo:'',notes:''},
-  {date:'2026-09-14',day:'Mon',dayNum:4,dayIn:'Tokyo',nightIn:'Tokyo',transit:'',city:'tokyo',hotel:'',todo:'',notes:''},
-  {date:'2026-09-15',day:'Tue',dayNum:5,dayIn:'Tokyo',nightIn:'Tokyo',transit:'',city:'tokyo',hotel:'',todo:'',notes:''},
-  {date:'2026-09-16',day:'Wed',dayNum:6,dayIn:'Tokyo',nightIn:'Tokyo',transit:'',city:'tokyo',hotel:'',todo:'',notes:'Demo test event 17:00–22:30'},
-  {date:'2026-09-17',day:'Thu',dayNum:7,dayIn:'Tokyo→Kyoto',nightIn:'Kyoto',transit:'Nozomi 31 12:12→14:23',city:'kyoto',hotel:'',todo:'',notes:'Check out Tokyo hotel AM'},
-  {date:'2026-09-18',day:'Fri',dayNum:8,dayIn:'Kyoto',nightIn:'Kyoto',transit:'',city:'kyoto',hotel:'',todo:'',notes:''},
-  {date:'2026-09-19',day:'Sat',dayNum:9,dayIn:'Kyoto→Osaka',nightIn:'Osaka',transit:'JR/Hankyu ~30min',city:'osaka',hotel:'',todo:'',notes:'Check out Kyoto, train to Osaka'},
-  {date:'2026-09-20',day:'Sun',dayNum:10,dayIn:'Osaka',nightIn:'Osaka',transit:'',city:'osaka',hotel:'',todo:'',notes:''},
-  {date:'2026-09-21',day:'Mon',dayNum:11,dayIn:'Osaka',nightIn:'Osaka',transit:'',city:'osaka',hotel:'',todo:'',notes:''},
-  {date:'2026-09-22',day:'Tue',dayNum:12,dayIn:'Osaka',nightIn:'Osaka',transit:'',city:'osaka',hotel:'',todo:'',notes:''},
-  {date:'2026-09-23',day:'Wed',dayNum:13,dayIn:'Osaka',nightIn:'Osaka',transit:'',city:'osaka',hotel:'',todo:'',notes:'Possible Nara day trip'},
-  {date:'2026-09-24',day:'Thu',dayNum:14,dayIn:'Osaka→Tokyo',nightIn:'Tokyo',transit:'Nozomi 252 12:15→14:45',city:'tokyo',hotel:'',todo:'',notes:'Check out Osaka hotel AM'},
-  {date:'2026-09-25',day:'Fri',dayNum:15,dayIn:'Tokyo',nightIn:'Tokyo',transit:'',city:'tokyo',hotel:'',todo:'',notes:''},
-  {date:'2026-09-26',day:'Sat',dayNum:16,dayIn:'Tokyo',nightIn:'Tokyo',transit:'',city:'tokyo',hotel:'',todo:'',notes:''},
-  {date:'2026-09-27',day:'Sun',dayNum:17,dayIn:'Tokyo',nightIn:'✈ In-flight',transit:'EK319 22:30 NRT',city:'tokyo',hotel:'',todo:'',notes:'Last day! Depart 22:30'},
-  {date:'2026-09-28',day:'Mon',dayNum:18,dayIn:'✈→Tel Aviv',nightIn:'Home 🏠',transit:'Arrive TLV 08:45',city:'transit',hotel:'',todo:'',notes:'Land 08:45 TLV'}
+  {date:'2026-09-11',day:'Fri',dayNum:1,dayIn:'Tel Aviv',nightIn:'✈ In-flight',transit:'EK2471→EK318 19:45',city:'transit',hotel:'',activities:'Flight departure',notes:'Depart TLV 19:45, arrive DVB'},
+  {date:'2026-09-12',day:'Sat',dayNum:2,dayIn:'✈→Tokyo',nightIn:'Tokyo',transit:'Arrive NRT 17:35',city:'tokyo',hotel:'JR Kyushu Hotel Blossom',activities:'Arrival, airport express (75m), hotel check-in, konbini dinner',notes:'Land 17:35, get to hotel via airport express'},
+  {date:'2026-09-13',day:'Sun',dayNum:3,dayIn:'Tokyo',nightIn:'Tokyo',transit:'',city:'tokyo',hotel:'JR Kyushu Hotel Blossom',activities:'Shimokitazawa vintage (1.5h), Daikanyama T-Site (1.5h), Yebius lunch (1.5h), Easy Shibuya walk (1.5h), ramen dinner',notes:'Rest buffers included'},
+  {date:'2026-09-14',day:'Mon',dayNum:4,dayIn:'Tokyo',nightIn:'Tokyo',transit:'',city:'tokyo',hotel:'JR Kyushu Hotel Blossom',activities:'Ueno & Culture - Tokyo National Museum (2–2.5h), Ueno Park walk (1h), Ameyoko market (1.5h), Ryogoku Kokugikan Grand Sumo (2.5–3h)',notes:'Sushi dinner'},
+  {date:'2026-09-15',day:'Tue',dayNum:5,dayIn:'Tokyo',nightIn:'Tokyo',transit:'',city:'tokyo',hotel:'JR Kyushu Hotel Blossom',activities:'Shinjuku Urban & Park - Shinjuku Gyoen (1.5–2h), Tokyo Metropolitan Gov. Building (60–90m), Harajuku (walk 15–20m), Meiji Jingu (1.5h), Cat Street (1h)',notes:'Buffer time: 3h. Hans Zimmer Concert (2–2.5h)'},
+  {date:'2026-09-16',day:'Wed',dayNum:6,dayIn:'Tokyo',nightIn:'Tokyo',transit:'',city:'tokyo',hotel:'JR Kyushu Hotel Blossom',activities:'Nakameguro - Meguro River walk (1h), boutiques (1.5h), optional Yokohama mini-trip (45–60m), light recovery rest',notes:'Buffer time: 2h. Early recovery night'},
+  {date:'2026-09-17',day:'Thu',dayNum:7,dayIn:'Tokyo→Osaka',nightIn:'Osaka',transit:'Nozomi 31 12:12→14:39',city:'osaka',hotel:'Cross Hotel Osaka',activities:'Free morning (1.5h), Tokyo Station (15–25m), Shinkansen to Osaka, hotel check-in (45m), Shinsekai district walk (1.5h), Dotonbori walk (1.5h), Hozenji Yokocho (1h)',notes:'Travel day with light afternoon activity. Ichiran dinner (1h)'},
+  {date:'2026-09-18',day:'Fri',dayNum:8,dayIn:'Osaka',nightIn:'Osaka',transit:'',city:'osaka',hotel:'Cross Hotel Osaka',activities:'Universal Studios Japan - Entry/orientation (60m), Super Nintendo World timed-entry (1.5–2h), USJ attractions (3–4h), Kinopio Café lunch (60m), queue buffers included, seated rest (30–45m)',notes:'High-energy day. Keep 1-2 attractions optional depending fatigue. Early night after high-walking day'},
+  {date:'2026-09-19',day:'Sat',dayNum:9,dayIn:'Osaka',nightIn:'Osaka',transit:'',city:'osaka',hotel:'Cross Hotel Osaka',activities:'Osaka Highlights - Osaka Castle & Morinomiya (20–35m & 1.5–2h), Kuromon Market lunch (1.5h), snack/hydration (30m), Wagyu Idaten dinner (1.5h)',notes:'Buffer time: 3h'},
+  {date:'2026-09-20',day:'Sun',dayNum:10,dayIn:'Osaka→Kyoto',nightIn:'Kyoto',transit:'JR/Rail 45–70m',city:'kyoto',hotel:'Kyoto Granbell Hotel',activities:'Morning check-out & luggage (30m), Osaka hotel → Kyoto Station, Hotel check-in, Yasaka Shrine (1h), Sannenzaka/Ninenzaka streets (1.5h), Starbucks break (30–45m)',notes:'Travel day. Buffer time: 3h. Gion District walk (1h) + Dinner in Gion (1.5h)'},
+  {date:'2026-09-21',day:'Mon',dayNum:11,dayIn:'Kyoto',nightIn:'Kyoto',transit:'',city:'kyoto',hotel:'Kyoto Granbell Hotel',activities:'Arashiyama & Northwest - Bamboo Grove early walk (1h), Tenryu-ji Temple (1h), Kinkaku-ji (Golden Pavilion) (1.5h), Gion walk (1h), samurai/Kyudo lesson (90–120m), optional Sagano train (2h)',notes:'Buffer: scenic day. Pontocho Alley walk (1.5h), Katsura River dinner (1.5h)'},
+  {date:'2026-09-22',day:'Tue',dayNum:12,dayIn:'Kyoto',nightIn:'Kyoto',transit:'',city:'kyoto',hotel:'Kyoto Granbell Hotel',activities:'Fushimi Inari & Downtown - Fushimi Inari Shrine main (1.5h), hiking section (45–75m), downtown Kyoto (20–30m), Nishiki Market lunch (1.5h), Teramachi/Shinkyogoku arcade (1.5h), Nintendo Kyoto & Pokémon Center (1.5h)',notes:'Buffer: 1h. teamLab Biovortex (1.5h), Kamo River walk (45m). Coffee break (45m)'},
+  {date:'2026-09-23',day:'Wed',dayNum:13,dayIn:'Eastern Kyoto',nightIn:'Kyoto',transit:'',city:'kyoto',hotel:'Kyoto Granbell Hotel',activities:'Kiyomizu-dera (1.5–2h), Yasaka Pagoda viewpoint (30m), Tea Ceremony (1.5h), Onsen Experience (1.5h), casual shopping (2h), Mori Art Museum (2h)',notes:'Buffer: 3h. Final Kyoto Dinner (1.5h). Check luggage forwarding for early departure'},
+  {date:'2026-09-24',day:'Thu',dayNum:14,dayIn:'Kyoto→Tokyo',nightIn:'Tokyo',transit:'Nozomi 16 12:01→14:15',city:'tokyo',hotel:'The Celestine Ginza',activities:'Easy morning check-out, Kyoto Station transfer (10–20m), Shinkansen to Tokyo (2h 14m), Tokyo hotel check-in (45–60m), Ginza Six mall (2h), Uniqlo/Muji Ginza (2h), Ukai-tei Ginza dinner (1.5h)',notes:'Travel day. Seated coffee break (1h). Buffer: 4h'},
+  {date:'2026-09-25',day:'Fri',dayNum:15,dayIn:'Ginza Luxury',nightIn:'Tokyo',transit:'',city:'tokyo',hotel:'The Celestine Ginza',activities:'Kappabashi Kitchen Street (2–2.5h), Senso-ji Temple (1.5h), Nakamise area walk (1.5h), snack/hydration (30m), Asakusa Imahan dinner (1.5h)',notes:'Settled rhythm. Buffer: 1h'},
+  {date:'2026-09-26',day:'Sat',dayNum:16,dayIn:'Shopping',nightIn:'Tokyo',transit:'',city:'tokyo',hotel:'The Celestine Ginza',activities:'Toyosu Market breakfast & exploration (1.5h), Toyosu → Shibuya (30–40m), Loft Shibuya/Don Quijote (2h), final Harajuku experience, shopping blend, optional Azabudai Hills (1.5h)',notes:'Buffer: 2h. Mori Art Museum optional. Free time: 2h'},
+  {date:'2026-09-27',day:'Sun',dayNum:17,dayIn:'Omotesando & Evening',nightIn:'✈ In-flight',transit:'EK319 22:30 NRT',city:'tokyo',hotel:'The Celestine Ginza',activities:'Meiji Jingu (1.5h), Cat Street stroll (1h), Omotesando avenue walk (1h), final Tokyo lunch (1.5h), luggage pickup 17:00, airport transfer (1.5h), flight 22:30',notes:'Departure day. Buffer: 2h. Hydration before flight'},
+  {date:'2026-09-28',day:'Mon',dayNum:18,dayIn:'✈→Tel Aviv',nightIn:'Home 🏠',transit:'Arrive TLV 08:45',city:'transit',hotel:'',activities:'Flight return EK319+EK2120 22:30→08:45+1',notes:'Land 08:45 TLV. Welcome home!'}
 ];
 
 const BOOKINGS = [
   {id:'fl-out',cat:'Flights',name:'TLV→NRT Outbound',date:'11 Sep',details:'EK2471+EK318, 19:45→17:35+1, Seats 73A/73B, 30kg, Booking DZIP76',amount:0,status:'paid',conf:'DZIP76'},
   {id:'fl-ret',cat:'Flights',name:'NRT→TLV Return',date:'27 Sep',details:'EK319+EK2120, 22:30→08:45+1, Seats 74J/74K, Booking DZIP76',amount:0,status:'paid',conf:'DZIP76'},
-  {id:'tr-tky',cat:'Trains',name:'Tokyo→Kyoto Shinkansen',date:'17 Sep',details:'Nozomi 31, 12:12→14:23',amount:27540,status:'booked',conf:'Res# 2002'},
-  {id:'tr-osk',cat:'Trains',name:'Osaka→Tokyo Shinkansen',date:'24 Sep',details:'Nozomi 252, 12:15→14:45',amount:28640,status:'booked',conf:'Res# 2003'},
-  {id:'htl-tk1',cat:'Hotels',name:'Tokyo Hotel (1st stay)',date:'12–17 Sep',details:'5 nights',amount:0,status:'tobook',conf:''},
-  {id:'htl-kyo',cat:'Hotels',name:'Kyoto Hotel',date:'17–19 Sep',details:'2 nights',amount:0,status:'tobook',conf:''},
-  {id:'htl-osk',cat:'Hotels',name:'Osaka Hotel',date:'19–24 Sep',details:'5 nights',amount:0,status:'tobook',conf:''},
-  {id:'htl-tk2',cat:'Hotels',name:'Tokyo Hotel (2nd stay)',date:'24–27 Sep',details:'3 nights',amount:0,status:'tobook',conf:''},
-  {id:'att-usj',cat:'Attractions',name:'Universal Studios Japan',date:'TBD',details:'Osaka, book Express Pass',amount:0,status:'tobook',conf:''},
-  {id:'att-tlb',cat:'Attractions',name:'teamLab Borderless',date:'TBD',details:'Azabudai Hills, Tokyo',amount:0,status:'tobook',conf:''},
+  {id:'tr-tk-osk',cat:'Trains',name:'Tokyo→Osaka Shinkansen',date:'17 Sep',details:'Nozomi 31, 12:12→14:39 (2h 27m)',amount:13870,status:'booked',conf:'Res# 2002'},
+  {id:'tr-kyo-tk',cat:'Trains',name:'Kyoto→Tokyo Shinkansen',date:'24 Sep',details:'Nozomi 16, 12:01→14:15 (2h 14m)',amount:13870,status:'booked',conf:'Res# 2003'},
+  {id:'htl-tk1',cat:'Hotels',name:'JR Kyushu Hotel Blossom Tokyo',date:'12–17 Sep',details:'5 nights (Fri-Wed), Cancel before 11 Sep',amount:0,status:'booked',conf:''},
+  {id:'htl-osk',cat:'Hotels',name:'Cross Hotel Osaka',date:'17–20 Sep',details:'3 nights (Thu-Sun incl. travel day)',amount:0,status:'booked',conf:''},
+  {id:'htl-kyo',cat:'Hotels',name:'Kyoto Granbell Hotel',date:'20–23 Sep',details:'3 nights (Sun-Wed incl. travel day), Cancel before 19 Sep',amount:0,status:'booked',conf:''},
+  {id:'htl-tk2',cat:'Hotels',name:'The Celestine Ginza Tokyo',date:'24–27 Sep',details:'3 nights (Thu-Sun)',amount:0,status:'booked',conf:''},
+  {id:'att-usj',cat:'Attractions',name:'Universal Studios Japan - Express Pass',date:'18 Sep',details:'Full day with Timed-entry + Express Pass (recommended)',amount:8600,status:'tobook',conf:''},
+  {id:'att-kyoto',cat:'Attractions',name:'teamLab Biovortex Kyoto',date:'22 Sep',details:'1.5h immersive art experience',amount:3900,status:'tobook',conf:''},
+  {id:'att-mori',cat:'Attractions',name:'Mori Art Museum Tokyo',date:'23 or 26 Sep',details:'2h optional art museum',amount:2100,status:'tobook',conf:''},
 ];
 
 const HOTELS_DATA = [
@@ -1314,45 +1315,45 @@ function renderTimeline() {
     const sd = state.days[i] || {};
     const cityClass = d.city === 'transit' ? 'city-transit' : `city-${d.city}`;
     const cityChip = d.city === 'transit' ? 'chip-transit' : `chip-${d.city}`;
-    const activities = CITY_ACTIVITIES[d.city] || [];
     const dateStr = new Date(d.date).toLocaleDateString('en-US', {month:'short', day:'numeric'});
     const dayInCity = getDayInCity(i);
     const cityNames = {tokyo:'Tokyo',kyoto:'Kyoto',osaka:'Osaka',transit:'Transit'};
     const dayInCityLabel = d.city === 'transit' ? 'In Transit' : `Day ${dayInCity} in ${cityNames[d.city]}`;
+    const activitiesSummary = d.activities ? `<p style="color:var(--text2);font-size:0.85rem;line-height:1.4;margin:8px 0;">${d.activities}</p>` : '';
     return `<div class="card day-card ${cityClass}">
       <div class="day-header" onclick="toggleDay(${i})">
-        <div>
+        <div style="flex:1;">
           <h3 style="-webkit-text-fill-color:var(--text);">Day ${d.dayNum} · ${d.day} ${dateStr}</h3>
           <div class="day-meta">
             <span class="chip ${cityChip}">${dayInCityLabel}</span>
             ${d.transit ? `<span style="color:var(--text2);font-size:0.8rem;">🚄 ${d.transit}</span>` : ''}
-            ${d.nightIn !== d.dayIn ? `<span style="color:var(--text3);font-size:0.8rem;">🌙 ${d.nightIn}</span>` : ''}
+            ${d.hotel ? `<span style="color:var(--text2);font-size:0.8rem;">🏨 ${d.hotel}</span>` : ''}
           </div>
         </div>
         <span class="expand-icon ${sd._open?'open':''}" id="exp-${i}">▼</span>
       </div>
+      ${activitiesSummary}
       <div class="day-body ${sd._open?'open':''}" id="body-${i}">
         <div class="grid-2" style="margin-bottom:12px;">
           <div>
-            <label>Plan / To-Do</label>
-            <textarea data-day="${i}" data-field="todo" oninput="syncDayField(${i},'todo',this.value)">${sd.todo || d.todo || ''}</textarea>
+            <label>Day Summary / To-Do</label>
+            <textarea data-day="${i}" data-field="todo" oninput="syncDayField(${i},'todo',this.value)" placeholder="Add daily notes...">${sd.todo || ''}</textarea>
           </div>
           <div>
-            <label>Meals / Reservations</label>
-            <textarea data-day="${i}" data-field="meals" oninput="syncDayField(${i},'meals',this.value)">${sd.meals || ''}</textarea>
+            <label>Meals & Reservations</label>
+            <textarea data-day="${i}" data-field="meals" oninput="syncDayField(${i},'meals',this.value)" placeholder="Note any bookings needed...">${sd.meals || ''}</textarea>
           </div>
         </div>
         <div class="grid-2">
           <div>
             <label>Daily Spend (¥)</label>
-            <input type="number" data-day="${i}" data-field="spend" value="${sd.spend || ''}" oninput="syncDayField(${i},'spend',this.value)">
+            <input type="number" data-day="${i}" data-field="spend" value="${sd.spend || ''}" placeholder="0" oninput="syncDayField(${i},'spend',this.value)">
           </div>
           <div>
-            <label>Notes</label>
-            <textarea data-day="${i}" data-field="notes" oninput="syncDayField(${i},'notes',this.value)">${sd.notes || d.notes || ''}</textarea>
+            <label>Personal Notes</label>
+            <textarea data-day="${i}" data-field="notes" oninput="syncDayField(${i},'notes',this.value)" placeholder="Weather, mood, memories...">${sd.notes || ''}</textarea>
           </div>
         </div>
-        ${activities.length ? `<div class="activity-chips">${activities.map(a => `<span class="activity-chip" onclick="addActivity(${i},'${a.replace(/'/g,"\\'")}')">${a}</span>`).join('')}</div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -1968,7 +1969,7 @@ async function sendChat() {
   try {
     const tripContext = `Trip: Japan Sep 11-28 2026, 2 people. Cities: Tokyo (5+3 nights), Kyoto (2 nights), Osaka (5 nights). Budget: ₪25,600. Flights booked (DZIP76). Shinkansen booked (Tokyo→Kyoto Sep 17, Osaka→Tokyo Sep 24). Hotels not yet booked. Interests: food, culture, pop culture, nature.`;
 
-    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
